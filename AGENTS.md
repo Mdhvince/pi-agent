@@ -13,7 +13,9 @@
 - Prefer existing utilities and dependencies over introducing new ones.
 - Avoid adding dependencies unless they provide clear value.
 - Add comments only where intent is not obvious from the code.
+- Never write agent, skill, or tool markers in code or commits (e.g. `# ponytail:`, `# shortcut:`); code comments must make sense to a reader who knows nothing about the tooling that wrote them.
 - The source of thruth is the code, with documentation only as fallback (Trust code over documentations and comments)
+- When checking for other sources (e.g local repo), always make sure you are checking the most up-to-date version
 
 ## Communication
 - Be concise and direct.
