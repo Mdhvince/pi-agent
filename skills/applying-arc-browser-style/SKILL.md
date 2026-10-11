@@ -5,7 +5,7 @@ description: >
   workflows, and technology stack. Use when the user requests Arc style, an
   Arc-like UI, or an Arc-inspired redesign. Covers the app frame, sidebar,
   inset content canvas, geometry, spacing, typography, controls, motion,
-  responsive behavior, and accessibility.
+  optional palettes and fine grain textures, responsive behavior, and accessibility.
 ---
 
 # Applying Arc Browser style
@@ -33,6 +33,9 @@ just to reproduce the appearance.
 For workspace apps, use a compact sidebar beside one dominant, inset content
 canvas. The sidebar belongs to the outer frame; it is not another floating card.
 Give the canvas a continuous rounded boundary and consistent outer spacing.
+Its internal header shares the canvas background and texture, without a separate
+flat band. Paint the surface once on the canvas and keep the internal header
+transparent so the grain continues without a seam.
 
 ```text
 App frame
@@ -103,6 +106,77 @@ do not make every container a pill.
 Keep depth restrained. Use the frame, inset spacing, and a soft shadow where
 needed to separate layers. Reserve stronger elevation for menus and dialogs.
 Do not stack shadows on every nested element or depend on blur for separation.
+
+## Palette and grain
+
+Keep the app's palette unless the user requests a change. Preserve its current
+light/dark mode even when a new palette is requested. A reference that shows dark
+surfaces is not permission to switch a light app to dark mode, or the reverse.
+Change mode only when explicitly requested; ask if the intended mode is unclear.
+
+Map reference colors to existing semantic tokens instead of scattering hex values
+through components. Arc supports varied themes. Adapt accents to the current mode
+rather than copying every surface from a reference.
+
+The third-party [Arc palette reference](https://www.colorpalettegenerator.ai/brands/arc-browser)
+provides blue `#4F8CFF` and yellow `#FFD84D` accents. The following is an example
+light adaptation, not an official Arc specification or a required palette:
+
+| Role | Example value | Application guidance |
+| --- | --- | --- |
+| Page background | `#F8FAFF` | Cool near-white rather than warm cream |
+| Outer frame | `#EEF2F9` | A slight cool tint around the content |
+| Canvas and raised surfaces | `#FFFFFF` | Keep the main working area light |
+| Decorative dividers | `#DBE1EB` | Use stronger boundaries where controls need them |
+| Primary action fill | `#4F8CFF` | Pair with dark ink such as `#1C2434` |
+| Links and small accent text | `#245AB9` | A deeper blue for readable text on light surfaces |
+| Highlight | `#FFD84D` | Use sparingly; give highlighted labels dark ink |
+| Main text | `#1C2434` | Primary content and important labels |
+| Secondary text | `#505969` | Supporting copy |
+| Metadata and placeholders | `#596171` | Keep small text readable over grain |
+
+Separate filled-action colors from text colors. White on `#4F8CFF`, and `#4F8CFF`
+on white, fail normal-text contrast. Adapt success, warning, and error colors to
+the current surfaces while preserving their semantic meanings.
+
+Check actual foreground/background pairs, hover states, placeholders, and inherited
+opacity. Normal text needs at least 4.5:1; large text and essential non-text
+indicators need at least 3:1. Include the final texture in the visual check.
+
+If grain is requested, make it fine, static, and visible at normal viewing size.
+Do not add a barely detectable layer and call the task complete. Apply it to the
+frame or canvas background, not over text, images, or controls. Keep forms and
+dense content easy to read. Do not lower the opacity of an entire container.
+
+For the web, a small local SVG tile can provide seamless monochrome noise:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <filter id="grain" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.88" numOctaves="3" seed="7" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#grain)" opacity="0.12"/>
+</svg>
+```
+
+Put the tile in the app's existing asset directory and use it as a repeating CSS
+background image over the base surface color. Preserve it when editing background
+shorthands. For visible fine grain, start around 0.08-0.16 opacity, then adjust
+for the surface and rendered text contrast. Inspect at normal size, not only in a
+magnified crop. Keep a fixed seed to prevent visual changes
+between renders. A small pre-rendered image is also suitable.
+
+Prefer a background layer over an overlay. If an overlay is necessary, keep it
+behind content, non-interactive, and outside the accessibility tree. Do not add a
+JavaScript loop, animated noise, or a new rendering dependency. Respect forced-color
+and increased-contrast preferences by removing decorative texture when appropriate.
+Use equivalent static background assets on native platforms. Do not add a theme or
+texture picker unless the user asks for one.
+
+For a full palette change, also inspect browser theme metadata, native control
+appearance, scrollbars, menus, dialogs, alerts, and focus indicators. On the web,
+keep `color-scheme` consistent with the preserved mode. Preserve established brand assets.
 
 ## Typography and controls
 
@@ -177,6 +251,9 @@ Verify that:
 
 - The main task dominates; navigation remains compact and easy to locate.
 - Insets, alignment, radii, and control density are consistent across screens.
+- The app keeps its existing light/dark mode unless a switch was explicitly requested.
+- Text, controls, and focus indicators remain readable on the final surfaces.
+  Grain stays subtle, stationary, and behind content, with no interaction cost.
 - Essential actions and current state are understandable without hover.
 - Keyboard users can reach every action and recover from drawers and dialogs.
 - Content remains reachable without accidental page-wide horizontal scrolling.
@@ -191,8 +268,9 @@ Arc match from source inspection alone.
 
 ## References
 
-These official guides document the interaction patterns, not the suggested sizes
-or timing ranges above. The workflow does not require a live network connection.
+The following official guides document the interaction patterns, not the suggested
+sizes, timing ranges, or optional third-party palette above. The workflow does not
+require a live network connection.
 
 - [Favorites](https://resources.arc.net/hc/en-us/articles/19230755904151-Favorites-Top-Tabs-Across-Every-Space)
 - [Pinned tabs](https://resources.arc.net/hc/en-us/articles/19231060187159-Pinned-Tabs-Tabs-you-want-to-stick-around)
