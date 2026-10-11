@@ -129,11 +129,11 @@ light adaptation, not an official Arc specification or a required palette:
 | Canvas and raised surfaces | `#FFFFFF` | Keep the main working area light |
 | Decorative dividers | `#DBE1EB` | Use stronger boundaries where controls need them |
 | Primary action fill | `#4F8CFF` | Pair with dark ink such as `#1C2434` |
-| Links and small accent text | `#245AB9` | A deeper blue for readable text on light surfaces |
+| Links and small accent text | `#1F55B4` | A deeper blue for readable text on light surfaces |
 | Highlight | `#FFD84D` | Use sparingly; give highlighted labels dark ink |
 | Main text | `#1C2434` | Primary content and important labels |
 | Secondary text | `#505969` | Supporting copy |
-| Metadata and placeholders | `#596171` | Keep small text readable over grain |
+| Metadata and placeholders | `#525A6A` | Keep small text readable over grain |
 
 Separate filled-action colors from text colors. White on `#4F8CFF`, and `#4F8CFF`
 on white, fail normal-text contrast. Adapt success, warning, and error colors to
@@ -156,13 +156,13 @@ For the web, a small local SVG tile can provide seamless monochrome noise:
     <feTurbulence type="fractalNoise" baseFrequency="0.88" numOctaves="3" seed="7" stitchTiles="stitch"/>
     <feColorMatrix type="saturate" values="0"/>
   </filter>
-  <rect width="100%" height="100%" filter="url(#grain)" opacity="0.12"/>
+  <rect width="100%" height="100%" filter="url(#grain)" opacity="0.20"/>
 </svg>
 ```
 
 Put the tile in the app's existing asset directory and use it as a repeating CSS
 background image over the base surface color. Preserve it when editing background
-shorthands. For visible fine grain, start around 0.08-0.16 opacity, then adjust
+shorthands. For visible fine grain, start around 0.12-0.20 opacity, then adjust
 for the surface and rendered text contrast. Inspect at normal size, not only in a
 magnified crop. Keep a fixed seed to prevent visual changes
 between renders. A small pre-rendered image is also suitable.
