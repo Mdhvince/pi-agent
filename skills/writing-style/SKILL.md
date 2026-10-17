@@ -24,8 +24,11 @@ sound more specific.
 
 ## Core principles
 
-### 0. Use simplified english
-Talk, Write, Communicate in `ASD-STE100` Simplified Technical English when communicating or writing in english.
+### 0. Follow the requested language
+
+Follow the global reply-language policy. When the user requests prose in a
+specific language, use that language for the artifact.
+Use ASD-STE100 Simplified Technical English only for English prose.
 
 ### 1. Say the thing directly
 

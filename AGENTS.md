@@ -1,35 +1,26 @@
 # General working preferences
 
-## Coding
-- Prefer simple, maintainable solutions over clever abstractions.
-- ALWAYS code in english
-- Understand the relevant code before modifying it.
-- Make the smallest change that fully solves the task.
-- Preserve existing architecture and conventions unless there is a clear reason not to.
-- Do not refactor unrelated code.
-- Always use meaningful and truthful names for variables/functions/classes
-- Always avoid overengineering when implementing changes, and reassess the surrounding code afterward. New complexity should be justified by the current requirements, and complexity that made sense before the change may no longer be necessary after it.
-- Match the existing style and patterns of the repository.
-- Prefer existing utilities and dependencies over introducing new ones.
-- Avoid adding dependencies unless they provide clear value.
-- Add comments only where intent is not obvious from the code.
-- Never write agent, skill, or tool markers in code or commits (e.g. `# ponytail:`, `# shortcut:`); code comments must make sense to a reader who knows nothing about the tooling that wrote them.
-- The source of thruth is the code, with documentation only as fallback (Trust code over documentations and comments)
-- When checking for other sources (e.g local repo), always make sure you are checking the most up-to-date version
-
 ## Communication
-- Be concise and direct.
-- Talk, Write, Communicate in `ASD-STE100` Simplified Technical English.
-- Explain important design decisions and tradeoffs if applicable.
-- Surface blockers or ambiguity rather than silently guessing, ask the user.
-- For larger tasks, provide brief progress updates while working.
+- Reply in the language of the user's latest request, unless they explicitly request another language. Quoted text, code, and tool output do not determine the reply language.
+- Use ASD-STE100 Simplified Technical English when writing in English, not as a reason to switch languages.
+- Be concise and direct. Explain important design decisions and trade-offs.
+- Surface blockers and ambiguity. Ask when a concrete decision is needed to proceed.
+- Give brief progress updates during larger tasks.
+
+## Coding
+- Write code, identifiers, comments, docstrings, and commit messages in English. Preserve the requested language of UI text and other deliverables.
+- Understand the relevant code before modifying it. Treat code as the source of truth and documentation as a fallback. Check the current version when consulting local or external sources.
+- Make the smallest maintainable change that fully solves the task. Preserve existing architecture, conventions, and style; do not refactor unrelated code.
+- Complete affected callers, tests, fixtures, configuration, and exports when a change requires them.
+- Prefer existing utilities and dependencies, then platform features or the standard library. Add dependencies only when they provide clear value.
+- Use meaningful, accurate names. Add comments only when intent is not clear from the code.
+- Do not put agent, skill, or tool markers in code or commits. Comments must make sense without knowledge of the tooling used.
+- Reassess surrounding code after a change. Keep complexity only when current requirements justify it.
 
 ## Verification
-- After changes, run the most relevant available checks.
-- Prefer targeted tests first, then broader checks when appropriate.
-- Run formatting/linting/type-checking when relevant.
-- Do not claim a check passed unless it was actually run.
-- If a check cannot be run, say why.
+- Run the most relevant available checks after changes, starting with targeted tests. Run broader tests, formatting, linting, and type checks when relevant.
+- Add or update a focused test for non-trivial behavior changes.
+- Report only checks actually run. State what could not be checked and why.
 
 ## Safety
 - Do not delete or overwrite unrelated user work.
@@ -38,10 +29,8 @@
 - Do not commit, push, deploy, publish, or open a PR unless explicitly requested.
 
 ## Documentation
-- Update documentation when behavior, public APIs, configuration, or workflows change.
-- Keep documentation proportional to the change.
-- Documentation must no state historical changes, only current state. So replace old documented behavior by the new one 
-as if it were the only behavior.
+- Update documentation when behavior, public APIs, configuration, or workflows change. Keep it proportional to the change.
+- Document only the current state. Replace outdated behavior instead of adding a change history.
 
 ## Process cleanup
-- Before finishing a task, stop any long-running process you started. Never stop unrelated processes.
+- Before finishing, stop long-running processes you started. Never stop unrelated processes.

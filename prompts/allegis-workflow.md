@@ -28,3 +28,13 @@ We are at the end of the work week, and it's time to do the following administra
 
    3. Once the draft is created, wait for my validation.
 6. Once validated, send the email.
+
+## Validation and retry safety
+
+- Confirm the billing period before creating anything. Search for an existing invoice and email draft for that period to avoid duplicates; ask if the result is ambiguous.
+- Calculate the subtotal from the confirmed daily rate and days using decimal arithmetic. Check currency, tax treatment, invoice dates, and payment terms against the confirmed source information. Do not invent missing terms or copy old dates blindly.
+- Before finalization, show the period, line items, subtotal, tax, and total for approval. If any approved details change, ask again before finalizing.
+- Reopen the downloaded PDF and check that it is readable and matches the approved invoice, including its number, period, and amounts. A successful download alone is not verification.
+- Before requesting send approval, inspect the actual draft's sender, recipient, subject, body, and attachment. Attach the verified PDF and preserve the email text above. Do not send through Qonto.
+- After a timeout or uncertain write, inspect the actual invoice or draft state before proceeding. Never blindly retry finalization or sending; a timeout does not prove that the action failed.
+- Use synthetic fixtures for setup evaluations. Never replay this workflow against live services to compare agent configurations.
