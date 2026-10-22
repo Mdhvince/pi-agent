@@ -17,6 +17,13 @@
 - Do not put agent, skill, or tool markers in code or commits. Comments must make sense without knowledge of the tooling used.
 - Reassess surrounding code after a change. Keep complexity only when current requirements justify it.
 
+### Core Coding Standards
+- **Strict Adherence to Project Conventions:** Systematically align with the repository's established coding style and documentation standards.
+- **Intent-Based Naming ("What" vs. "How"):** Name functions and variables based on their purpose (what they do) rather than their implementation details (how they do it).
+- **Elimination of Semantic Noise:** Avoid generic names and negative qualifiers (naming what a function *doesn't* do) that clutter the context without adding value.
+- **Robust Behavioral Testing:** Implement deep, meaningful tests that cover edge cases and system integrity, rather than just verifying the most recent change.
+- **Simplified Language:** Use simple, direct, and accessible English in all code and comments to maximize clarity and maintainability.
+
 ## Verification
 - Run the most relevant available checks after changes, starting with targeted tests. Run broader tests, formatting, linting, and type checks when relevant.
 - Add or update a focused test for non-trivial behavior changes.
