@@ -3,7 +3,7 @@
   "theme": "fleet-dark",
   "defaultProvider": "ollama-cloud",
   "defaultModel": "gemma4:31b-cloud",
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "max",
   "tuiMode": "fullscreen",
   "fullscreenScrollbar": "auto",
   "packages": [
