@@ -1,8 +1,8 @@
 {
-  "lastChangelogVersion": "1.3.0",
+  "lastChangelogVersion": "1.4.0",
   "theme": "fleet-dark",
-  "defaultProvider": "xai",
-  "defaultModel": "grok-4.7",
+  "defaultProvider": "ollama-cloud",
+  "defaultModel": "gemma4:31b-cloud",
   "defaultThinkingLevel": "high",
   "tuiMode": "fullscreen",
   "fullscreenScrollbar": "auto",
@@ -34,7 +34,8 @@
   "quietStartup": false,
   "defaultProjectTrust": "ask",
   "enabledModels": [
-    "xai/grok-4.7"
+    "xai/grok-4.7",
+    "ollama-cloud/gemma4:31b-cloud"
   ],
   "extensions": [
     "-builtin:mcp"
