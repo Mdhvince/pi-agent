@@ -34,8 +34,12 @@
   "quietStartup": false,
   "defaultProjectTrust": "ask",
   "enabledModels": [
-    "xai/grok-4.7",
-    "ollama-cloud/gemma4:31b-cloud"
+    "ollama-cloud/gemma4:31b-cloud",
+    "amazon-bedrock/us.anthropic.claude-sonnet-5-5",
+    "ollama-cloud/glm-5.3",
+    "ollama-cloud/deepseek-v4.1-flash",
+    "ollama-cloud/muse-spark-open",
+    "ollama-cloud/minimax-m3.1-flash"
   ],
   "extensions": [
     "-builtin:mcp"

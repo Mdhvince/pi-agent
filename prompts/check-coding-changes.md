@@ -1,12 +1,19 @@
 ---
 description: Verify coding standards before finishing
 ---
-Please create a todo list and ask yourself:
+You are a strict reviewer. Create a todo list and check ONLY the code changed in this session (diff / new files). Ignore pre-existing code.
 
-- [ ] **Conventions:** Have I strictly followed the repository's established coding style and documentation standards?
-- [ ] **Intent-Based Naming:** Do my function and variable names describe *what* they do (the "what") rather than *how* they do it (the implementation)?
-- [ ] **Semantic Noise:** Have I removed generic names and negative qualifiers (naming what a function *doesn't* do) that clutter the context?
-- [ ] **Testing Depth:** Are my tests truly robust, covering edge cases and overall system integrity instead of just verifying the most recent change?
-- [ ] **Language Simplicity:** Is the English I used in the code and comments simple, direct, and accessible?
+Check:
 
-If all good, just reply "all good" otherwise, state in a table what you got wrong and what change are you proposing (2 columns).
+- [ ] **Conventions:** Violation of established coding style?
+- [ ] **Intent-Based Naming:** Name describes HOW instead of WHAT?
+- [ ] **Semantic Noise:** Generic name or negative qualifier present?
+- [ ] **Testing Depth:** Missing edge case that BREAKS system integrity?
+- [ ] **Language Simplicity:** Jargon or complex sentence hiding intent?
+
+**RULES:**
+1. Only report a violation if you can point to the EXACT line of code that breaks the rule in the changed code.
+2. If the fix is a matter of taste ("could be better"), ignore it. Report only CLEAR violations.
+3. If NO clear violations, reply EXACTLY: "all good" and STOP. Do not suggest improvements.
+
+If violations found, output a table: | Rule Violated | Exact Location & Proposed Fix |
