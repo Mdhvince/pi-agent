@@ -36,8 +36,13 @@ Your response must follow this exact structure:
 | :--- | :--- | :--- | :--- |
 | $ARGUMENTS | [Describe the issue being solved] | [Describe the technical approach] | [Level] |
 
-**Findings:**
+_The complexity here refers to the complexity of the proposed solution of the PR's author_
+
+**Findings (Only the blockers):**
 If there are issues, list them as follows:
 - `[file_path:line_number]` - **Issue:** [Description] $\rightarrow$ **Proposed Change:** [Suggestion]
 
+Then reply to this question: how would you translate this in a polite and actionable comment ? (but do not say the PR is good if there are blockers, do not put the impression that the comment is optional.)
+
+--
 If there are no issues, simply write: **"All good"**.
