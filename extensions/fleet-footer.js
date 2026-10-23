@@ -1,3 +1,5 @@
+import { blockContentWidth, blockInset } from "./lib/layout.js";
+
 const MCP_STATUS_EVENT = "pi-mcp-adapter/status/v1";
 
 function formatTokens(count) {
@@ -79,6 +81,11 @@ export default function fleetFooter(pi) {
     const ctx = lastCtx;
     if (!ctx) return "";
 
+    // Keep the notes inside the same horizontal band as the input block.
+    const inset = blockInset(width);
+    const contentWidth = blockContentWidth(width);
+    const gutter = " ".repeat(inset);
+
     const sep = { plain: " · ", colored: theme.fg("dim", " · ") };
     const left = buildSegments(ctx, theme);
 
@@ -128,7 +135,7 @@ export default function fleetFooter(pi) {
     };
     let leftSegs = [...left];
     let rightSegs = [...right];
-    while (line(leftSegs, rightSegs).plainLength > width) {
+    while (line(leftSegs, rightSegs).plainLength > contentWidth) {
       const droppable = [...rightSegs, ...leftSegs].filter((s) => s.priority > 0);
       if (droppable.length === 0) break;
       const worst = droppable.reduce((a, b) => (b.priority > a.priority ? b : a));
@@ -141,14 +148,14 @@ export default function fleetFooter(pi) {
     const rightPlain = rightSegs.map((s) => s.plain).join(sep.plain);
     const rightColored = rightSegs.map((s) => s.colored).join(sep.colored);
 
-    let padding = width - leftPlain.length - rightPlain.length;
+    let padding = contentWidth - leftPlain.length - rightPlain.length;
     if (padding < 2) {
-      const keep = Math.max(width - rightPlain.length - 2 - 1, 0);
+      const keep = Math.max(contentWidth - rightPlain.length - 2 - 1, 0);
       leftPlain = `${leftPlain.slice(0, keep)}…`;
       leftColored = theme.fg("text", leftPlain);
-      padding = width - leftPlain.length - rightPlain.length;
+      padding = contentWidth - leftPlain.length - rightPlain.length;
     }
-    return leftColored + " ".repeat(Math.max(padding, 2)) + rightColored;
+    return gutter + leftColored + " ".repeat(Math.max(padding, 2)) + rightColored + gutter;
   }
 
   const track = (_event, ctx) => {
