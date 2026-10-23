@@ -15,6 +15,31 @@ function shortenCwd(cwd) {
   return home && cwd.startsWith(home) ? `~${cwd.slice(home.length)}` : cwd;
 }
 
+/**
+ * Summary of the MCP servers for the footer.
+ *
+ * The connected count alone says little, because the adapter starts servers
+ * on demand, so 0 connected is the normal state. What matters is what is
+ * running right now, and what is broken. Returns null when there is
+ * nothing worth showing.
+ */
+export function mcpSummary(status) {
+  const servers = status.servers ?? [];
+  const broken = servers.filter((server) => server.status === "failed" || server.status === "needs-auth" || server.status === "blocked");
+  const live = servers.filter((server) => server.status === "connected");
+  const names = (list) => {
+    const shown = list.slice(0, 2).map((server) => server.name).join(", ");
+    return list.length > 2 ? `${shown} +${list.length - 2}` : shown;
+  };
+  if (broken.length > 0) {
+    return { plain: `mcp ! ${names(broken)}`, tone: "warning" };
+  }
+  if (live.length > 0) {
+    return { plain: `mcp ${names(live)}`, tone: "success" };
+  }
+  return null;
+}
+
 function sumUsageTotals(sessionManager) {
   const totals = { input: 0, output: 0, cost: 0 };
   for (const entry of sessionManager.getEntries()) {
@@ -113,10 +138,8 @@ export default function fleetFooter(pi) {
     }
 
     if (mcpStatus) {
-      const total = mcpStatus.servers.length - mcpStatus.disabledCount;
-      const failing = mcpStatus.servers.some((server) => server.status === "failed" || server.status === "needs-auth");
-      const plain = `mcp ${mcpStatus.connectedCount}/${total}`;
-      push(2, plain, theme.fg(failing ? "warning" : "success", plain));
+      const summary = mcpSummary(mcpStatus);
+      if (summary) push(2, summary.plain, theme.fg(summary.tone, summary.plain));
     }
 
     if (ctx.model) {
