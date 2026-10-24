@@ -8,6 +8,7 @@
 !/extensions/
 /extensions/*
 !/extensions/guard-git.ts
+!/extensions/guard-hostinger.ts
 !/extensions/fleet-footer.js
 !/extensions/centered-input-block.js
 !/extensions/lib/

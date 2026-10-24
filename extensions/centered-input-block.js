@@ -7,17 +7,64 @@
  * The horizontal geometry is shared with the footer notes, see lib/layout.js.
  * Tune the constants there, then run /reload in pi.
  *
- * ── Gradient frame ───────────────────────────────────────────────────────
+ * ── Styles ───────────────────────────────────────────────────────────────
  *
- * A colored line drawn around the block: a top edge, a bottom edge and one
+ * FRAME.style selects the working indicator:
+ *
+ *   "dust"      a field of dots that fades in and out over the block while
+ *               the agent works. The default.
+ *   "gradient"  a coloured line that travels around the block while the
+ *               agent works.
+ *   "none"      no indicator, just the plain filled block.
+ *
+ * Both animated styles are the working indicator. They show only while the
+ * agent is busy, and neither changes the size of the block.
+ *
+ * ── Dust style ───────────────────────────────────────────────────────────
+ *
+ * The whole block becomes a field of cells. Two layers drive it:
+ *
+ *   - a slow noise field, which makes the dots gather into clumps and open
+ *     voids. Without it the scatter is even, which reads as a lattice.
+ *   - a per-cell clock, which makes each dot dissolve and re-form on its own.
+ *
+ * The noise field drifts sideways, so the whole pattern travels across the
+ * block like dust in a light breeze. Dust dots pick one of three glyph heights
+ * so they never line up into rows, and rare brighter dots (motes, the "•")
+ * sit among them.
+ *
+ * The field never covers text: a cell holding a glyph, the cursor, or a
+ * scroll hint keeps its content and the dust yields. Density is a share of
+ * the available blank cells, so a narrow block has proportionally fewer dots.
+ *
+ * While the dust is up, the block fill dissolves into the page background, so
+ * the grey panel disappears and only the dots and the text remain. The fill
+ * comes back when the dust fades out. The page colour is read from the
+ * theme's export.pageBg.
+ *
+ *   hue        base theme token for the dust. The busy state overrides it:
+ *              working uses this hue, retry uses "warning", and compaction
+ *              and branch summary use "dim".
+ *   density    share of blank cells that are visible at any moment.
+ *   moteShare  share of the visible cells that are bright motes.
+ *   cycleMs    duration of one dissolve cycle for a cell.
+ *   fadeMs     time to fade the whole field in, and out again.
+ *   drift      travel speed of the pattern, in columns per second. 0 = still.
+ *   noiseScale size of the clumps, in columns and rows. Larger is calmer.
+ *   glyphs     glyphs for a dust dot, picked per cell at three heights, and
+ *              the glyph for a mote.
+ *
+ * Brightness is quantised to eight steps above the background, so the falloff
+ * is smooth and the field keeps its shape on a terminal that is not truecolor.
+ * The density is calibrated against the measured value distribution; changing
+ * noiseScale or drift shifts that calibration slightly.
+ *
+ * ── Gradient style ───────────────────────────────────────────────────────
+ *
+ * A coloured line drawn on the block: a top edge, a bottom edge and one
  * column on each side. The gradient position advances on a timer, so the
- * colors travel along the perimeter.
+ * colours travel along the perimeter.
  *
- * The frame is the working indicator. It shows while the agent is busy, in
- * place of a spinner. The border columns are reserved even when the frame
- * is off, so the block never resizes.
- *
- *   enabled    draw the frame at all
  *   rounded    rounded corners (╭ ╮ ╰ ╯) instead of square ones
  *   stops      theme tokens the gradient cycles through
  *   steps      color buckets around the perimeter, keeps the output small
@@ -25,8 +72,9 @@
  *   speed      phase step per tick
  *   intervalMs milliseconds per tick
  */
+import { readFileSync } from "node:fs";
 import { CustomEditor } from "@earendil-works/pi-coding-agent";
-import { mixColors, visibleWidth } from "@earendil-works/pi-tui";
+import { colorToHex, mixColors, parseColor, visibleWidth } from "@earendil-works/pi-tui";
 import { blockContentWidth, blockInset } from "./lib/layout.js";
 
 // ── Tunables ────────────────────────────────────────────────────────────────
@@ -36,27 +84,154 @@ const BG_TOKEN = "customMessageBg";
 
 /** Blank background rows kept above and below the input text. */
 const PAD_TOP = 0;
-const PAD_BOTTOM = 1;
+const PAD_BOTTOM = 0;
 
 /** Left/right padding of the text inside the block, in columns. */
 const INNER_PADDING_X = 1;
 
-/**
- * Animated gradient frame drawn around the block.
- *
- * The frame is the working indicator: it appears while the agent is busy
- * and replaces a spinner. The border columns are always reserved, so the
- * block does not resize when the frame shows.
- */
+/** Working indicator style. See the file header. */
 const FRAME = {
-  enabled: true,
+  style: "dust",
+  // Gradient style.
   rounded: true,
   stops: ["accent", "success", "warning", "error"],
   steps: 48,
   animate: "working",
   speed: 0.04,
   intervalMs: 80,
+  // Dust style is tuned in DUST below.
 };
+
+/** Dust style, used when FRAME.style is "dust". */
+const DUST = {
+  hue: "accent",
+  density: 0.4,
+  moteShare: 0.1,
+  cycleMs: 500,
+  fadeMs: 400,
+  /** How fast the pattern travels across the block, in columns per second. */
+  drift: 0,
+  /** Size of the soft brightness patches, in columns and rows. */
+  noiseScale: { x: 7, y: 2.4 },
+  /** Glyphs sit at different heights, so dots do not form horizontal lines. */
+  glyphs: { dust: [".", "·", "˙"], mote: "•" },
+};
+
+/** Hue per busy state. A null value uses DUST.hue. */
+const KIND_HUE = {
+  working: null,
+  retry: "warning",
+  compaction: "dim",
+  branchSummary: "dim",
+};
+
+/** Brightness steps above the background, as a share of the dust hue. */
+const DUST_LEVELS = [0, 0.08, 0.16, 0.25, 0.36, 0.48, 0.62, 0.78, 1];
+
+/** Zero-width markers pi wraps around the fake cursor. */
+const FAKE_CURSOR_START = "\x1b_pi:fc\x07";
+const FAKE_CURSOR_END = "\x1b_pi:/fc\x07";
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Stable pseudo-random value in [0, 1) for a cell coordinate. */
+function cellHash(x, y, salt) {
+  let h = Math.imul(x + 1, 0x27d4eb2d) ^ Math.imul(y + 1, 0x165667b1) ^ Math.imul(salt + 1, 0x9e3779b1);
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/**
+ * Measured field quantiles: the value above which a cell is visible, for a
+ * requested density. The noise field is not evenly distributed, so these were
+ * measured against the constants shipped here rather than derived.
+ * Changing noiseScale or drift shifts the calibration slightly.
+ */
+const DENSITY_THRESHOLD = [
+  [0.02, 0.985],
+  [0.1, 0.899],
+  [0.2, 0.728],
+  [0.3, 0.547],
+  [0.4, 0.417],
+  [0.5, 0.296],
+  [0.6, 0.186],
+  [0.7, 0.087],
+  [0.8, 0.03],
+];
+
+/** Field value above which a cell is visible, for the requested density. */
+function visibleThreshold(density) {
+  const d = Math.min(0.8, Math.max(0.02, density));
+  for (let i = 1; i < DENSITY_THRESHOLD.length; i++) {
+    const [d1, t1] = DENSITY_THRESHOLD[i];
+    if (d <= d1) {
+      const [d0, t0] = DENSITY_THRESHOLD[i - 1];
+      const k = (d - d0) / (d1 - d0);
+      return t0 + (t1 - t0) * k;
+    }
+  }
+  return DENSITY_THRESHOLD[DENSITY_THRESHOLD.length - 1][1];
+}
+
+/**
+ * Smooth value noise. Returns 0..1, and neighbouring positions give similar
+ * values, which is what makes the dots clump into patches instead of forming
+ * an even scatter.
+ */
+/** Smooth 0..1 remap between two edges. */
+function smoothstep(edge0, edge1, value) {
+  const t = Math.min(1, Math.max(0, (value - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+}
+
+function valueNoise(x, y, salt) {
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const fx = x - x0;
+  const fy = y - y0;
+  // Smoothstep keeps the transition between grid points soft.
+  const sx = fx * fx * (3 - 2 * fx);
+  const sy = fy * fy * (3 - 2 * fy);
+  const n00 = cellHash(x0, y0, salt);
+  const n10 = cellHash(x0 + 1, y0, salt);
+  const n01 = cellHash(x0, y0 + 1, salt);
+  const n11 = cellHash(x0 + 1, y0 + 1, salt);
+  const top = n00 + (n10 - n00) * sx;
+  const bottom = n01 + (n11 - n01) * sx;
+  return top + (bottom - top) * sy;
+}
+
+/** Cached page background of the active theme. */
+let pageColorCache = { path: null, color: null };
+
+/**
+ * Background the block sits on, so the fill can dissolve into it while the
+ * dust takes over. Read from the theme's export.pageBg, which is the colour
+ * the theme uses for the page around panels. Returns null when unknown.
+ */
+function pageBackground(theme) {
+  const path = theme?.sourcePath;
+  if (path && pageColorCache.path === path) return pageColorCache.color;
+  let color = null;
+  if (path) {
+    try {
+      const json = JSON.parse(readFileSync(path, "utf8"));
+      const vars = json?.vars ?? {};
+      let value = json?.export?.pageBg;
+      const seen = new Set();
+      while (typeof value === "string" && value in vars && !seen.has(value)) {
+        seen.add(value);
+        value = vars[value];
+      }
+      if (typeof value === "string" && value.length > 0) color = parseColor(value);
+    } catch {
+      color = null;
+    }
+  }
+  pageColorCache = { path: path ?? null, color };
+  return color;
+}
 
 // ── Editor ──────────────────────────────────────────────────────────────────
 
@@ -65,14 +240,25 @@ class BlockEditor extends CustomEditor {
     super(tui, editorTheme, keybindings, {
       paddingX: options?.paddingX ?? INNER_PADDING_X,
       autocompleteMaxVisible: options?.autocompleteMaxVisible ?? 5,
-      // Pi hands the working status to the editor, which is how the frame
-      // knows the agent is busy.
+      // Pi hands the working status to the editor, which is how the styles
+      // know the agent is busy.
       embedWorkingStatus: true,
     });
     /** Position of the gradient along the perimeter, 0..1. */
     this.phase = 0;
+    /** Monotonic clock in milliseconds, advanced by the animation timer. */
+    this.clock = 0;
+    /** Current dust opacity, 0..1, driven by the fade. */
+    this.dustLevel = 0;
     /** Timestamp of the last render, used to stop the animation. */
     this.lastRenderAt = 0;
+    /** Per-cell animation parameters, keyed by "x:y". */
+    this.dustCells = new Map();
+    /** Colour escape per brightness level, rebuilt when the hue changes. */
+    this.dustEscapes = [];
+    this.dustHueKey = "";
+    /** Background for the current render: undefined = theme fill, null = none. */
+    this.renderBg = undefined;
   }
 
   /**
@@ -86,12 +272,14 @@ class BlockEditor extends CustomEditor {
     return this.resolveTheme?.() ?? null;
   }
 
-  /** Wrap text in the block background color. */
+  /** Wrap text in the background colour of the current render. */
   paint(text) {
     const theme = this.getTheme();
     if (!theme) return text;
     try {
-      return theme.bg(BG_TOKEN, text);
+      if (this.renderBg === undefined) return theme.bg(BG_TOKEN, text);
+      if (this.renderBg === null) return text;
+      return theme.style(text, { bg: this.renderBg });
     } catch {
       return text;
     }
@@ -108,13 +296,28 @@ class BlockEditor extends CustomEditor {
     return count > 0 ? `${arrow} ${count} more ` : "";
   }
 
+  /** Active style. */
+  styleMode() {
+    return FRAME.style === "gradient" || FRAME.style === "dust" ? FRAME.style : "none";
+  }
+
+  /** The working status is on screen. */
+  statusActive() {
+    return !!this.workingStatusIndicator;
+  }
+
+  /** Kind of the current busy state, or null when idle. */
+  busyKind() {
+    return this.workingStatusIndicator?.kind ?? null;
+  }
+
   renderTopBorder(width, hiddenLineCount) {
-    if (this.frameActive()) return this.frameEdgeCells(width, true);
+    if (this.styleMode() === "gradient" && this.frameActive()) return this.frameEdgeCells(width, true);
     return this.paint(this.pad(this.scrollLabel("↑", hiddenLineCount), width));
   }
 
   renderBottomBorder(width, hiddenLineCount) {
-    if (this.frameActive()) return this.frameEdgeCells(width, false);
+    if (this.styleMode() === "gradient" && this.frameActive()) return this.frameEdgeCells(width, false);
     return this.paint(this.pad(this.scrollLabel("↓", hiddenLineCount), width));
   }
 
@@ -125,9 +328,13 @@ class BlockEditor extends CustomEditor {
     const inset = blockInset(width);
     const gutter = " ".repeat(inset);
     const contentWidth = blockContentWidth(width);
-    // The border columns are always reserved, so the block does not resize
-    // when the frame appears.
-    const fillWidth = Math.max(20, FRAME.enabled ? contentWidth - 2 : contentWidth);
+    const style = this.styleMode();
+    // While the dust is up the fill dissolves into the page background, so the
+    // block stops reading as a grey panel and the dots take over.
+    this.renderBg = style === "dust" ? this.dustBackground() : undefined;
+    // The gradient style reserves two columns for its vertical borders, so
+    // the block never resizes when the frame appears.
+    const fillWidth = Math.max(20, style === "gradient" ? contentWidth - 2 : contentWidth);
 
     // super.render() returns [topBorder, ...content, bottomBorder, ...autocomplete]
     const rendered = super.render(fillWidth);
@@ -146,20 +353,208 @@ class BlockEditor extends CustomEditor {
     for (let i = 0; i < PAD_BOTTOM; i++) innerRows.push(this.paint(" ".repeat(fillWidth)));
     innerRows.push(bottom);
 
-    const rows = FRAME.enabled ? this.renderFrame(innerRows) : innerRows;
+    let rows;
+    if (style === "gradient") rows = this.renderFrame(innerRows);
+    else if (style === "dust") rows = this.renderDust(innerRows);
+    else rows = innerRows;
+
     return rows.map((row) => gutter + row + gutter);
+  }
+
+  // ── Dust field ────────────────────────────────────────────────────────────
+
+  /**
+   * Background of the block for the current dust opacity. Undefined means the
+   * theme fill, null means the terminal default, a colour is a blend of both.
+   */
+  dustBackground() {
+    const theme = this.getTheme();
+    if (!theme) return undefined;
+    if (this.dustLevel <= 0) return undefined;
+    const fill = theme.colors[BG_TOKEN];
+    const page = pageBackground(theme);
+    if (!fill || !page) return this.dustLevel >= 1 ? null : undefined;
+    if (this.dustLevel >= 1) return null;
+    return mixColors(fill, page, this.dustLevel);
+  }
+
+  /** Colour the dust blends into: the current background, or the page. */
+  dustBackdrop() {
+    const theme = this.getTheme();
+    if (!theme) return undefined;
+    if (this.renderBg && this.renderBg !== null) return this.renderBg;
+    return pageBackground(theme);
+  }
+
+  /** Animation parameters for one cell, computed once and cached. */
+  dustCell(x, y) {
+    const key = `${x}:${y}`;
+    const cached = this.dustCells.get(key);
+    if (cached) return cached;
+    const glyphs = DUST.glyphs.dust;
+    const cell = {
+      phase: cellHash(x, y, 1) * Math.PI * 2,
+      jitter: 0.7 + cellHash(x, y, 2) * 0.6,
+      mote: cellHash(x, y, 3) < DUST.moteShare,
+      // A fixed height per cell keeps the scatter stable instead of flickering.
+      glyph: glyphs[Math.min(glyphs.length - 1, Math.floor(cellHash(x, y, 4) * glyphs.length))],
+    };
+    this.dustCells.set(key, cell);
+    return cell;
+  }
+
+  /** Theme token used for the current busy state. */
+  dustHue() {
+    const kind = this.busyKind();
+    return (kind && KIND_HUE[kind]) || DUST.hue;
+  }
+
+  /**
+   * Colour escape per brightness level. Rebuilt only when the hue or the
+   * theme colours change, so a frame reuses the same strings.
+   */
+  dustEscapesFor(theme, hue, backdrop) {
+    const accent = theme.colors[hue] ?? theme.colors.accent;
+    if (!accent) return null;
+    const target = backdrop ?? theme.colors[BG_TOKEN];
+    if (!target) return null;
+    const key = `${hue}|${colorToHex(target)}`;
+    if (key === this.dustHueKey && this.dustEscapes.length === DUST_LEVELS.length) return this.dustEscapes;
+    this.dustEscapes = DUST_LEVELS.map((level) => {
+      if (level <= 0) return "";
+      // theme.fg takes a token name only; theme.style accepts a color object,
+      // and wraps the text in an opening escape and a closing reset.
+      const wrapped = theme.style("\u0000", { fg: mixColors(accent, target, 1 - level) });
+      return wrapped.slice(0, Math.max(0, wrapped.indexOf("\u0000")));
+    });
+    this.dustHueKey = key;
+    return this.dustEscapes;
+  }
+
+  /**
+   * Overlay the dust field on one rendered row. Cells that hold a glyph, the
+   * cursor, or a label keep their content and the dust yields to them.
+   * Consecutive cells of the same brightness share one escape sequence.
+   */
+  overlayDust(row, y, escapes) {
+    const theme = this.getTheme();
+    if (!theme || !escapes) return row;
+    const opacity = this.dustLevel;
+    if (opacity <= 0) return row;
+
+    const threshold = visibleThreshold(DUST.density);
+    const width = visibleWidth(row);
+    let out = "";
+    let run = "";
+    let runLevel = -1;
+    const flush = () => {
+      if (!run) return;
+      out += escapes[runLevel] + run + "\x1b[39m";
+      run = "";
+      runLevel = -1;
+    };
+    const emit = (level, glyph) => {
+      if (level !== runLevel) {
+        flush();
+        runLevel = level;
+      }
+      run += glyph;
+    };
+
+    let col = 0;
+    let i = 0;
+    // The cursor must never be covered: pi draws it between two zero-width
+    // markers and may also invert the character. The dust yields to both.
+    let inCursorSpan = false;
+    let inverted = false;
+    while (i < row.length) {
+      if (row[i] === "\x1b") {
+        const esc = this.readEscape(row, i);
+        if (esc === FAKE_CURSOR_START) inCursorSpan = true;
+        else if (esc === FAKE_CURSOR_END) inCursorSpan = false;
+        else if (esc === "\x1b[7m") inverted = true;
+        else if (esc === "\x1b[27m") inverted = false;
+        flush();
+        out += esc;
+        i += esc.length;
+        continue;
+      }
+      const ch = String.fromCodePoint(row.codePointAt(i));
+      if (ch === " " && !inCursorSpan && !inverted) {
+        const cell = this.dustCell(col, y);
+        const cycle = (this.clock / (DUST.cycleMs * cell.jitter) + cell.phase) % (Math.PI * 2);
+        const twinkle = 0.5 + 0.5 * Math.sin(cycle);
+        // A slow noise field supplies the clumps: neighbouring cells share a
+        // value, so the field opens voids and gathers patches as it drifts.
+        const drift = (this.clock / 1000) * DUST.drift;
+        const clump = valueNoise(
+          (col + drift) / DUST.noiseScale.x,
+          y / DUST.noiseScale.y,
+          7,
+        );
+        // Pull the product toward the extremes so the field spreads evenly.
+        const wave = smoothstep(0.18, 0.78, clump * (0.55 + 0.45 * twinkle));
+        if (wave > threshold) {
+          const bright = Math.min(1, ((wave - threshold) / (1 - threshold)) * opacity);
+          const last = DUST_LEVELS.length - 1;
+          const level = cell.mote
+            ? Math.round(last * 0.55) + Math.min(last - Math.round(last * 0.55), Math.floor(bright * 5))
+            : 1 + Math.min(4, Math.floor(bright * 5));
+          if (escapes[level]) {
+            emit(level, cell.mote ? DUST.glyphs.mote : cell.glyph);
+            col += 1;
+            i += ch.length;
+            continue;
+          }
+        }
+      }
+      flush();
+      out += ch;
+      col += 1;
+      i += ch.length;
+    }
+    flush();
+    const used = visibleWidth(out);
+    return used >= width ? out : out + " ".repeat(width - used);
+  }
+
+  /** Read one escape sequence starting at `i`. */
+  readEscape(s, i) {
+    const next = s[i + 1];
+    if (next === "[") {
+      let j = i + 2;
+      while (j < s.length && (s[j] === ";" || s[j] === ":" || (s[j] >= "0" && s[j] <= "9"))) j++;
+      return s.slice(i, Math.min(s.length, j + 1));
+    }
+    if (next === "]" || next === "_") {
+      let j = i + 2;
+      while (j < s.length) {
+        if (s[j] === "\x07") return s.slice(i, j + 1);
+        if (s[j] === "\x1b" && s[j + 1] === "\\") return s.slice(i, j + 2);
+        j++;
+      }
+      return s.slice(i);
+    }
+    return s.slice(i, i + 2);
+  }
+
+  /** Apply the dust field to every row of the block. */
+  renderDust(rows) {
+    const theme = this.getTheme();
+    if (!theme || this.dustLevel <= 0) return rows;
+    const escapes = this.dustEscapesFor(theme, this.dustHue(), this.dustBackdrop());
+    if (!escapes) return rows;
+    // The rows already carry the block background.
+    return rows.map((row, index) => this.overlayDust(row, index, escapes));
   }
 
   // ── Gradient frame ────────────────────────────────────────────────────────
 
-  /** The working status is on screen. */
-  statusActive() {
-    return !!this.workingStatusIndicator;
-  }
-
   /** The gradient frame is drawn. It is the working indicator. */
   frameActive() {
-    return FRAME.enabled && this.statusActive();
+    if (FRAME.animate === "never") return false;
+    if (FRAME.animate === "always") return true;
+    return this.statusActive();
   }
 
   /** Color of the gradient at a perimeter position (0..1). */
@@ -250,13 +645,26 @@ class BlockEditor extends CustomEditor {
     });
   }
 
-  /** Advance the gradient while the frame is on screen. */
+  // ── Animation ─────────────────────────────────────────────────────────────
+
+  /** True while the current style has something to animate. */
+  animationActive() {
+    const style = this.styleMode();
+    if (style === "dust") return this.statusActive() || this.dustLevel > 0;
+    if (style !== "gradient") return false;
+    return this.frameActive();
+  }
+
+  /** Advance the active animation while it is on screen. */
   updateAnimation() {
-    const active = FRAME.animate === "always" || (FRAME.animate === "working" && this.statusActive());
-    if (!active) {
+    if (!this.animationActive()) {
       this.stopAnimation();
       return;
     }
+    this.startTimer();
+  }
+
+  startTimer() {
     if (this.animationTimer) return;
     this.animationTimer = setInterval(() => {
       // The editor was replaced, stop animating.
@@ -264,7 +672,17 @@ class BlockEditor extends CustomEditor {
         this.stopAnimation();
         return;
       }
-      this.phase = (this.phase + FRAME.speed) % 1;
+      this.clock += FRAME.intervalMs;
+      if (this.styleMode() === "dust") {
+        const target = this.statusActive() ? 1 : 0;
+        const step = FRAME.intervalMs / Math.max(1, DUST.fadeMs);
+        this.dustLevel =
+          target > this.dustLevel
+            ? Math.min(target, this.dustLevel + step)
+            : Math.max(target, this.dustLevel - step);
+      } else {
+        this.phase = (this.phase + FRAME.speed) % 1;
+      }
       this.tui.requestRender();
     }, FRAME.intervalMs);
     this.animationTimer.unref?.();
@@ -280,10 +698,9 @@ class BlockEditor extends CustomEditor {
     this.stopAnimation();
   }
 
-  /** The border column shifts the content one column to the right. */
+  /** The gradient style insets its content by one column. */
   handleMouse(event) {
-    if (!FRAME.enabled) return super.handleMouse(event);
-    // The autocomplete list sits one row above where the editor expects it.
+    if (this.styleMode() !== "gradient") return super.handleMouse(event);
     const height = this.renderedAutocompleteHeight || 0;
     const start = this.renderedVisibleLineCount + 1;
     const inAutocomplete = height > 0 && event.y >= start && event.y < start + height;
