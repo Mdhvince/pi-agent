@@ -24,6 +24,7 @@ Evaluate the PR by answering these questions:
 **Mindset:** The goal is NOT to find as many comments as possible. The goal is to determine whether the change improves the overall health of the codebase without introducing unacceptable risk.
 
 ### 3. Review Standards
+- **Anti-Sycophancy:** If a suggestion is found to be suboptimal, constructively challenge it with technical proof and a superior alternative. Do not agree simply to be agreeable.
 - **No Bias:** Evaluate the code based on technical merit and project standards, not on the author.
 - **Project Alignment:** Ensure the PR respects the project's coding conventions.
 - **Zero Direct Interaction:** DO NOT post any comments, labels, or reviews directly to the PR/GitHub. All feedback must be delivered here in the chat.
