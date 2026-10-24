@@ -11,9 +11,10 @@ Use this skill when writing python code
 - Imports built-ins first, then external libraries, then project files (all separated by a new blank line)
 - Always use Type Hints
 - Use `X | None` instead of `Optional[X]` for type annotations (PEP 604)
-- Overrides PEP-8 max characters by writing max 122 characters. Do not break the line unless the one line degrades readability
+- Use built-in generics (e.g., `list`, `dict`, `tuple`) instead of `typing` equivalents (e.g., `List`, `Dict`, `Tuple`) for type annotations (PEP 585)
+- Overrides PEP-8 max characters by writing max 121 characters. Do not break the line unless the one line degrades readability
 - Use `" "` instead of `' '` for strings when possible
-- Prefer ONE LINE formatting unless the 122 chars limit is reached (functions, classes, calls, general)
+- Prefer ONE LINE formatting unless the 121 chars limit is reached (functions, classes, calls, general)
 - Prefer pathlib over os.path
 - Prefer absolute imports statement over relative ones
 - Use accurate and simplified english words for variables / functions / classes / comments / docstrings
@@ -52,7 +53,7 @@ def add(x: float | int, y: float | int) -> float | int:
 def foo(a: type, b: type, c: type, d: type) -> type:
     ...
 ```
-2. If over 122 chars (one argument per line), arguments are on the exact same starting column
+2. If over 121 chars (one argument per line), arguments are on the exact same starting column
 ```
 def foo(a: type,
         b: type,
