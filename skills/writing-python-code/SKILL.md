@@ -10,6 +10,7 @@ Use this skill when writing python code
 - Follow `writing-python-code/guidelines/guidelines.md`
 - Imports built-ins first, then external libraries, then project files (all separated by a new blank line)
 - Always use Type Hints
+- Use `X | None` instead of `Optional[X]` for type annotations (PEP 604)
 - Overrides PEP-8 max characters by writing max 122 characters. Do not break the line unless the one line degrades readability
 - Use `" "` instead of `' '` for strings when possible
 - Prefer ONE LINE formatting unless the 122 chars limit is reached (functions, classes, calls, general)
