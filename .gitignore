@@ -22,6 +22,7 @@
 /tests/*
 !/tests/guard-git.test.mjs
 !/tests/setup-config.test.mjs
+!/tests/centered-input-block.test.mjs
 
 !/evals/
 /evals/*

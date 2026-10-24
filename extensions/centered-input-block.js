@@ -259,6 +259,8 @@ class BlockEditor extends CustomEditor {
     this.dustHueKey = "";
     /** Background for the current render: undefined = theme fill, null = none. */
     this.renderBg = undefined;
+    /** Set when custom rendering failed: the block falls back to the base editor. */
+    this.degraded = false;
   }
 
   /**
@@ -296,8 +298,9 @@ class BlockEditor extends CustomEditor {
     return count > 0 ? `${arrow} ${count} more ` : "";
   }
 
-  /** Active style. */
+  /** Active style. A degraded block renders as a plain block. */
   styleMode() {
+    if (this.degraded) return "none";
     return FRAME.style === "gradient" || FRAME.style === "dust" ? FRAME.style : "none";
   }
 
@@ -322,6 +325,20 @@ class BlockEditor extends CustomEditor {
   }
 
   render(width) {
+    if (this.degraded) return super.render(width);
+    try {
+      return this.renderBlock(width);
+    } catch (error) {
+      this.disableCustomRendering(error);
+      return super.render(width);
+    }
+  }
+
+  /**
+   * The custom render, separate so that a failure can fall back to the base
+   * editor without losing the whole session.
+   */
+  renderBlock(width) {
     this.lastRenderAt = Date.now();
     this.updateAnimation();
 
@@ -359,6 +376,16 @@ class BlockEditor extends CustomEditor {
     else rows = innerRows;
 
     return rows.map((row) => gutter + row + gutter);
+  }
+
+  /**
+   * A custom render failed. Keep the session alive on the base editor for
+   * the rest of the session, and say so once instead of crashing the TUI.
+   */
+  disableCustomRendering(error) {
+    this.degraded = true;
+    this.stopAnimation();
+    console.error(`centered-input-block: fell back to the base editor (${error})`);
   }
 
   // ── Dust field ────────────────────────────────────────────────────────────
@@ -664,26 +691,36 @@ class BlockEditor extends CustomEditor {
     this.startTimer();
   }
 
+  /** One animation step, on the timer. */
+  tick() {
+    // The editor was replaced, stop animating.
+    if (Date.now() - this.lastRenderAt > 1500) {
+      this.stopAnimation();
+      return;
+    }
+    this.clock += FRAME.intervalMs;
+    if (this.styleMode() === "dust") {
+      const target = this.statusActive() ? 1 : 0;
+      const step = FRAME.intervalMs / Math.max(1, DUST.fadeMs);
+      this.dustLevel =
+        target > this.dustLevel
+          ? Math.min(target, this.dustLevel + step)
+          : Math.max(target, this.dustLevel - step);
+    } else {
+      this.phase = (this.phase + FRAME.speed) % 1;
+    }
+    this.tui.requestRender();
+  }
+
   startTimer() {
     if (this.animationTimer) return;
     this.animationTimer = setInterval(() => {
-      // The editor was replaced, stop animating.
-      if (Date.now() - this.lastRenderAt > 1500) {
-        this.stopAnimation();
-        return;
+      // A failure in the timer must not crash the TUI outside a render.
+      try {
+        this.tick();
+      } catch (error) {
+        this.disableCustomRendering(error);
       }
-      this.clock += FRAME.intervalMs;
-      if (this.styleMode() === "dust") {
-        const target = this.statusActive() ? 1 : 0;
-        const step = FRAME.intervalMs / Math.max(1, DUST.fadeMs);
-        this.dustLevel =
-          target > this.dustLevel
-            ? Math.min(target, this.dustLevel + step)
-            : Math.max(target, this.dustLevel - step);
-      } else {
-        this.phase = (this.phase + FRAME.speed) % 1;
-      }
-      this.tui.requestRender();
     }, FRAME.intervalMs);
     this.animationTimer.unref?.();
   }
@@ -719,13 +756,19 @@ export default function centeredInputBlock(pi) {
     if (typeof ui.setEditorComponent !== "function") return;
 
     ourFactory = (tui, editorTheme, keybindings) => {
-      const editor = new BlockEditor(tui, editorTheme, keybindings, {
-        paddingX: INNER_PADDING_X,
-        autocompleteMaxVisible: 5,
-      });
-      // Resolve the live theme at render time so /theme changes apply.
-      editor.resolveTheme = () => ui.theme;
-      return editor;
+      try {
+        const editor = new BlockEditor(tui, editorTheme, keybindings, {
+          paddingX: INNER_PADDING_X,
+          autocompleteMaxVisible: 5,
+        });
+        // Resolve the live theme at render time so /theme changes apply.
+        editor.resolveTheme = () => ui.theme;
+        return editor;
+      } catch (error) {
+        // A pi update may break construction: keep the session usable.
+        console.error(`centered-input-block: using the base editor (${error})`);
+        return new CustomEditor(tui, editorTheme, keybindings, { autocompleteMaxVisible: 5 });
+      }
     };
     ui.setEditorComponent(ourFactory);
   }

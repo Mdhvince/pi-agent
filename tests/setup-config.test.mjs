@@ -18,6 +18,7 @@ test("keeps reviewed setup files visible to Git and private state ignored", () =
 		"themes/fleet-dark.json",
 		"tests/guard-git.test.mjs",
 		"tests/setup-config.test.mjs",
+		"tests/centered-input-block.test.mjs",
 		"evals/README.md",
 	];
 	const privatePaths = [
