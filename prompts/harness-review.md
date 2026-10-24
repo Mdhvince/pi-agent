@@ -23,7 +23,7 @@ to follow. Do not expose secrets or personal task data in the review.
 
 1. Establish the request, starting setup, execution trace, deliverable, and checks
    actually run. Record missing evidence rather than assuming success or failure.
-2. Identify one concrete failure or omission. Cite its file and line, event, or
+2. Determine if a concrete failure or omission exists; if so, identify it. Cite its file and line, event, or
    tool call. Separate execution problems from domain requirements; do not assume
    that either category needs a change.
 3. Inspect the current relevant component and its callers or triggers. If useful,

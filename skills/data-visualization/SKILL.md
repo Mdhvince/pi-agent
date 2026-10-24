@@ -36,7 +36,7 @@ Identify the audience, the question the visual must answer, and the main informa
 
 Inspect the supplied data or chart before making recommendations. Identify categories, ordered or numerical variables, time fields, existing labels, and visible gaps. Ask a focused question if missing information changes the chart choice or interpretation. Do not invent the missing information. This is the operational step for applying the sources' chart, encoding, and context guidance.
 
-For a redesign, identify the current perception problem before changing the chart: wrong comparison, unclear groups, unwanted emphasis, excessive detail, weak contrast, or an apparent trend through missing values. (H3-H5; T5-T12)
+For a redesign, determine if a perception problem exists; if so, identify it before changing the chart: wrong comparison, unclear groups, unwanted emphasis, excessive detail, weak contrast, or an apparent trend through missing values. (H3-H5; T5-T12)
 
 ## 2. Choose the chart and comparison method
 

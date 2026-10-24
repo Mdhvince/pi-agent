@@ -37,7 +37,7 @@ I added code
 
 # Before Writing Any Test
 
-The agent MUST identify:
+The agent should analyze the following:
 
 1. What requirement, contract, invariant, bug, or business rule is protected?
 2. What observable behavior proves it works?
@@ -334,12 +334,12 @@ Do NOT aggressively DRY tests when abstraction hides:
 
 # AI Coding Agent Rules
 
-When implementing a feature, the agent MUST:
+When implementing a feature, the agent should:
 
 1. Read the specification or acceptance criteria first.
-2. Identify required behaviors.
+2. Determine required behaviors.
 3. Inspect existing tests.
-4. Identify gaps in behavioral coverage.
+4. Analyze for gaps in behavioral coverage.
 5. Add only tests that provide additional confidence.
 6. Prefer observable outcomes.
 7. Avoid implementation coupling.
