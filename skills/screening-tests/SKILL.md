@@ -1,6 +1,6 @@
 ---
 name: screening-tests
-description: Check tests against rules that hold in every project: observable behavior, determinism, actionable failure, sensitive assertions. Use when writing a test or assessing existing tests.
+description: "Check tests against rules that hold in every project: observable behavior, determinism, actionable failure, sensitive assertions. Use when writing a test or assessing existing tests."
 ---
 
 # Screening tests
