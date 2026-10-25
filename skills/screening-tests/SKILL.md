@@ -8,7 +8,7 @@ description: Check tests against rules that hold in every project: observable be
 Read this file before writing or assessing a test.
 
 
-## Five invariants
+## Five rules that hold everywhere
 
 1. A test protects an observable behavior, not a piece of code.
 2. A test stays valid when the implementation changes. Only a requirement change may break it.
@@ -16,31 +16,31 @@ Read this file before writing or assessing a test.
 4. A failing test names its cause without extra instrumentation.
 5. There is no universal target number. Measurement finds gaps, it never justifies writing a test.
 
-## Modes
+## Choose a mode
 
 | Request | Mode |
 |---|---|
-| New feature or bug fix | WRITE |
-| Existing tests or a diff | ASSESS |
+| New feature or bug fix | Write |
+| Existing tests or a diff | Assess |
 
-## WRITE
+## When writing a test
 
 1. State the behavior in one row: requirement | behavior | observable outcome.
-   No empty observable outcome: use a stop condition instead.
+   No empty observable outcome: do not write the test instead (see below).
 2. Write given / when / then, with the data flow visible in the body (or Arrange, Act, Assert).
 3. Run the checklist and fix every FAIL.
-4. Run the change gate.
+4. Run the checklist for a change.
 
-## ASSESS
+## When assessing tests
 
 1. List each added or modified test with the behavior it claims.
-2. Run the checklist on each test, and the gate on the change.
+2. Run the checklist on each test, and the change checklist on the change.
 3. Rank findings: blocking (no behavior protected, nondeterminism, assertion
    cannot fail), important (brittle, over-specified), cosmetic (naming, structure).
 4. Give the check id, the evidence, the concrete edit.
 5. Report to the user. A green pipeline is not evidence.
 
-## Single-test checklist
+## Checklist for one test
 
 Every result needs evidence: a quoted line, a test name, or a command output.
 
@@ -64,7 +64,7 @@ defined in a file you did not read.
 | T12 | Sensitive assertion | The assertion would also pass for a plausible wrong result | Assert the specific value or the property that must hold |
 | T13 | Single scenario | Calls the subject again after an assertion, so two scenarios share one test | Split into one test per scenario |
 
-## Change gate
+## Checklist for a change
 
 Applied to the change as a whole, not to individual tests.
 
@@ -76,9 +76,25 @@ Applied to the change as a whole, not to individual tests.
 | G4 | Runtime and flakiness | Runtime grew, or a test was rerun until green |
 | G5 | Isolated data | A shared fixture is mutated |
 
-## Stop conditions
+## When a test fails
 
-Do not write a test when:
+A requirement is what the system must do, stated outside the code: an acceptance
+criterion, an API contract, a business rule, a data invariant. An expectation is
+what the assertion in the test says will happen. "The code does X today" is not a
+requirement.
+
+1. Name the requirement the test protects. If none exists, or it is ambiguous,
+   record it first. Without it, no verdict is valid.
+2. If the failure is intermittent, environmental, or caused by the test setup, fix
+   the test mechanics, not its expectation.
+3. If the expectation matches the requirement, the code is wrong. Fix the code and
+   leave the test alone.
+4. If the expectation contradicts the requirement, or the requirement changed, the
+   test is wrong. Fix the test and cite the requirement.
+5. Never align an expectation on the current output of the code. The only valid
+   reason to change an expectation is the requirement.
+
+## Do not write a test when
 
 - nothing identifiable is protected;
 - the behavior is already covered at the same scope;
@@ -87,15 +103,10 @@ Do not write a test when:
 
 Report the stop condition instead.
 
-## Output
+## How to report findings
 
 | Check | Result | Evidence |
 |---|---|---|
 | T6 No logic | FAIL | `assertEquals(base + "/u/0/photos", ...)` computes the expectation |
 
 Result is PASS, FAIL or N/A. No result without evidence.
-
-## Origin
-
-Software Engineering at Google ch. 12, ISTQB CTFL v4.0.1 ch. 4, Test Desiderata,
-and the Google Testing Blog.
