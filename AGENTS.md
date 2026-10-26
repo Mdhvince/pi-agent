@@ -1,9 +1,6 @@
 # General working preferences
 
 ## Communication
-- Reply in the language of the user's latest request, unless they explicitly request another language. Quoted text, code, and tool output do not determine the reply language.
-- Use ASD-STE100 Simplified Technical English when writing in English, not as a reason to switch languages.
-- Avoid `em (—)` dash.
 - Be concise and direct. Explain important design decisions and trade-offs.
 - Surface blockers and ambiguity. Ask when a concrete decision is needed to proceed.
 - Give brief progress updates during larger tasks.
@@ -12,8 +9,6 @@
 
 ## Reasoning & Objectivity
 - **Anti-Sycophancy:** If a suggestion is found to be suboptimal, constructively challenge it with technical proof and a superior alternative. Do not agree simply to be agreeable.
-- **Source of Truth:** Treat documentation as a hypothesis, not absolute truth. When in conflict, the actual code and empirical test results are the sole source of truth.
-- **Empirical Validation:** Validate all technical assertions through direct code analysis or execution. Never assume behavior based on a description.
 
 ## Coding
 - Write code, identifiers, comments, docstrings, and commit messages in English. Preserve the requested language of UI text and other deliverables.
@@ -36,12 +31,6 @@
 - Run the most relevant available checks after changes, starting with targeted tests. Run broader tests, formatting, linting, and type checks when relevant.
 - Add or update a focused test for non-trivial behavior changes.
 - Report only checks actually run. State what could not be checked and why.
-
-## Safety
-- Do not delete or overwrite unrelated user work.
-- Do not run destructive commands unless clearly required.
-- Do not modify secrets, credentials, or environment configuration unless explicitly requested.
-- Do not commit, push, deploy, publish, or open a PR unless explicitly requested.
 
 ## Documentation
 - Update documentation when behavior, public APIs, configuration, or workflows change. Keep it proportional to the change.
