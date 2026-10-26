@@ -7,7 +7,8 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
  * that starts with a Git invocation is inspected. Text that only mentions a
  * blocked operation (quoted strings, grep patterns, commit messages) stays
  * allowed. Whitespace inside a segment is collapsed, so spacing tricks do
- * not slip a command through.
+ * not slip a command through. Leading `NAME=value` words are skipped, so
+ * `FOO=1 git push` is still recognized.
  *
  * Limits: a global option before the subcommand (`git -C path push`) and Git
  * reached through another command (`xargs git push`, `sh -c "git push"`) are
@@ -16,6 +17,9 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 /** Shell operators that sequence commands or chain them into a pipeline. */
 const SEGMENT_SEPARATORS = /&&|\|\||[;|&\n]/;
+
+/** Environment assignments before a command, as in `FOO=1 BAR="a b" git push`. */
+const LEADING_ENV_ASSIGNMENTS = /^(?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|\S*)\s+)+/;
 
 /**
  * Return the blocked operation a Git invocation performs, or null when the
@@ -56,7 +60,7 @@ export default function (pi: ExtensionAPI) {
 
 		const command = (event.input as { command: string }).command;
 		for (const segment of command.split(SEGMENT_SEPARATORS)) {
-			const tokens = segment.trim().split(/\s+/);
+			const tokens = segment.trim().replace(LEADING_ENV_ASSIGNMENTS, "").split(/\s+/);
 			if (tokens[0] !== "git" && !tokens[0].endsWith("/git")) continue;
 
 			const operation = blockedOperation(tokens[1], tokens.slice(2));

@@ -90,7 +90,7 @@ export default function fleetFooter(pi) {
       return {
         render(width) {
           try {
-            return [renderLine(width, theme)];
+            return renderLines(width, theme);
           } catch {
             return [""];
           }
@@ -102,9 +102,9 @@ export default function fleetFooter(pi) {
     });
   }
 
-  function renderLine(width, theme) {
+  function renderLines(width, theme) {
     const ctx = lastCtx;
-    if (!ctx) return "";
+    if (!ctx) return [""];
 
     // Keep the notes inside the same horizontal band as the input block.
     const inset = blockInset(width);
@@ -178,7 +178,20 @@ export default function fleetFooter(pi) {
       leftColored = theme.fg("text", leftPlain);
       padding = contentWidth - leftPlain.length - rightPlain.length;
     }
-    return gutter + leftColored + " ".repeat(Math.max(padding, 2)) + rightColored + gutter;
+    const lines = [gutter + leftColored + " ".repeat(Math.max(padding, 2)) + rightColored + gutter];
+
+    // The session name sits under the path so a long name never pushes the
+    // stats off the line.
+    const sessionName = ctx.sessionManager.getSessionName();
+    if (sessionName) {
+      const prefix = "Session name: ";
+      const room = contentWidth - prefix.length;
+      const label =
+        sessionName.length > room ? `${sessionName.slice(0, Math.max(room - 1, 0))}…` : sessionName;
+      lines.push(gutter + theme.fg("dim", prefix) + theme.fg("accent", label));
+    }
+
+    return lines;
   }
 
   const track = (_event, ctx) => {

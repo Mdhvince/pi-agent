@@ -40,6 +40,18 @@ test("blocks the destructive forms of scoped Git operations", () => {
 	}
 });
 
+test("blocks a destructive operation behind leading environment assignments", () => {
+	for (const command of [
+		"SKIP=ggshield git push",
+		"A=1 B=2 git push origin main",
+		'A="two words" git push',
+		"A='two words' git reset --hard",
+		"cd repo && FOO=1 git clean -f",
+	]) {
+		assert.equal(blocks(command), true, command);
+	}
+});
+
 test("allows safe Git operations", () => {
 	for (const command of [
 		"git status",
@@ -51,6 +63,8 @@ test("allows safe Git operations", () => {
 		"git restore src/file.ts",
 		"git stash pop",
 		"git commit --amend",
+		"SKIP=ggshield git commit -m fix",
+		'A="two words" git status',
 	]) {
 		assert.equal(onToolCall({ toolName: "bash", input: { command } }), undefined, command);
 	}
@@ -64,6 +78,9 @@ test("allows commands that only mention a blocked operation as data", () => {
 		"grep 'git checkout .' README.md",
 		"git log --oneline | grep push",
 		"node --test tests/guard-git.test.mjs",
+		"echo FOO=1 git push",
+		"FOO=1",
+		"FOO=1 echo git push",
 	]) {
 		assert.equal(onToolCall({ toolName: "bash", input: { command } }), undefined, command);
 	}
