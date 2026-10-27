@@ -45,9 +45,9 @@
     "customMessageBg": "bgSecondary",
     "customMessageText": "textPrimary",
     "customMessageLabel": "violet",
-    "toolPendingBg": "bgIsland",
-    "toolSuccessBg": "#182921",
-    "toolErrorBg": "#401A1E",
+    "toolPendingBg": "#14161A",
+    "toolSuccessBg": "#17251E",
+    "toolErrorBg": "#2C181B",
     "toolTitle": "blue",
     "toolOutput": "#C3C5C9",
 
