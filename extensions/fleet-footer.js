@@ -2,6 +2,8 @@ import { blockContentWidth, blockInset } from "./lib/layout.js";
 
 const MCP_STATUS_EVENT = "pi-mcp-adapter/status/v1";
 
+const NO_SESSION_NAME = "No name yet";
+
 function formatTokens(count) {
   if (count < 1000) return String(count);
   if (count < 10000) return `${(count / 1000).toFixed(1)}k`;
@@ -13,6 +15,28 @@ function formatTokens(count) {
 function shortenCwd(cwd) {
   const home = process.env.HOME;
   return home && cwd.startsWith(home) ? `~${cwd.slice(home.length)}` : cwd;
+}
+
+/** Cut plain text to a column budget, marking the cut with an ellipsis. */
+function truncatePlain(text, maxWidth) {
+  if (text.length <= maxWidth) return text;
+  const room = maxWidth - 1;
+  return room > 0 ? `${text.slice(0, room)}…` : "";
+}
+
+/**
+ * Session name segment for the first footer row.
+ *
+ * An unnamed session shows a placeholder instead of an empty row, so the
+ * footer keeps a stable height and the label is always discoverable.
+ */
+function sessionNameSegment(ctx, theme) {
+  const prefix = "Session name: ";
+  const name = ctx.sessionManager.getSessionName()?.trim();
+  if (!name) {
+    return { plain: prefix + NO_SESSION_NAME, colored: theme.fg("dim", prefix + NO_SESSION_NAME) };
+  }
+  return { plain: prefix + name, colored: theme.fg("dim", prefix) + theme.fg("accent", name) };
 }
 
 /**
@@ -67,20 +91,6 @@ export default function fleetFooter(pi) {
     mcpStatus = snapshot;
   });
 
-  function buildSegments(ctx, theme) {
-    // Plain text and colored variants are built together so layout math
-    // can use plain lengths (ANSI codes have no visible width).
-    const segments = [];
-    const push = (priority, plain, colored) => segments.push({ priority, plain, colored });
-
-    const branch = footerDataRef?.getGitBranch();
-    const project = shortenCwd(ctx.cwd);
-    push(0, project, theme.fg("text", project));
-    if (branch) push(2, `⎇ ${branch}`, theme.fg("accent", `⎇ ${branch}`));
-
-    return segments;
-  }
-
   function installFooter(ctx) {
     if (footerInstalled || !ctx.hasUI || ctx.mode !== "tui") return;
     footerInstalled = true;
@@ -102,21 +112,11 @@ export default function fleetFooter(pi) {
     });
   }
 
-  function renderLines(width, theme) {
-    const ctx = lastCtx;
-    if (!ctx) return [""];
-
-    // Keep the notes inside the same horizontal band as the input block.
-    const inset = blockInset(width);
-    const contentWidth = blockContentWidth(width);
-    const gutter = " ".repeat(inset);
-
-    const sep = { plain: " · ", colored: theme.fg("dim", " · ") };
-    const left = buildSegments(ctx, theme);
-
-    // Right-side segments, cheapest-to-drop first is handled via priority below.
-    const right = [];
-    const push = (priority, plain, colored) => right.push({ priority, plain, colored });
+  function statusSegments(ctx, theme) {
+    // Plain text and colored variants are built together so layout math
+    // can use plain lengths (ANSI codes have no visible width).
+    const segments = [];
+    const push = (priority, plain, colored) => segments.push({ priority, plain, colored });
 
     const totals = sumUsageTotals(ctx.sessionManager);
     const tokensPlain = `↑${formatTokens(totals.input)} ↓${formatTokens(totals.output)}`;
@@ -150,48 +150,71 @@ export default function fleetFooter(pi) {
       push(0, plain, theme.fg("accent", plain));
     }
 
-    // Drop lowest-priority segments (highest number first) until the line fits.
-    const line = (leftSegs, rightSegs) => {
-      const leftPlain = leftSegs.map((s) => s.plain).join(" ");
-      const rightPlain = rightSegs.map((s) => s.plain).join(sep.plain);
-      return { plainLength: leftPlain.length + 2 + rightPlain.length, leftPlain };
-    };
-    let leftSegs = [...left];
-    let rightSegs = [...right];
-    while (line(leftSegs, rightSegs).plainLength > contentWidth) {
-      const droppable = [...rightSegs, ...leftSegs].filter((s) => s.priority > 0);
+    return segments;
+  }
+
+  function renderLines(width, theme) {
+    const ctx = lastCtx;
+    if (!ctx) return [""];
+
+    // Keep the notes inside the same horizontal band as the input block.
+    const inset = blockInset(width);
+    const contentWidth = blockContentWidth(width);
+    const gutter = " ".repeat(inset);
+
+    const sep = { plain: " · ", colored: theme.fg("dim", " · ") };
+
+    return [
+      pathRow(ctx, theme, contentWidth, gutter, sep),
+      sessionNameRow(ctx, theme, contentWidth, gutter),
+    ];
+  }
+
+  // The path leads the first row and the status segments share it on the right.
+  // The branch sits next to the path but gives up its room like a droppable
+  // status segment, and the path itself is cut only as a last resort.
+  function pathRow(ctx, theme, contentWidth, gutter, sep) {
+    const prefix = "Pwd: ";
+    const path = shortenCwd(ctx.cwd);
+    const branch = footerDataRef?.getGitBranch();
+    let statuses = statusSegments(ctx, theme);
+    let branchSegment = branch ? { priority: 2, plain: `⎇ ${branch}` } : null;
+
+    const plainOf = (segments) => segments.map((s) => s.plain).join(sep.plain);
+    const leftPlain = () => prefix + path + (branchSegment ? sep.plain + branchSegment.plain : "");
+
+    // Drop the cheapest segment (highest priority number) until the row fits.
+    while (leftPlain().length + 2 + plainOf(statuses).length > contentWidth) {
+      const droppable = [...statuses.filter((s) => s.priority > 0), ...(branchSegment ? [branchSegment] : [])];
       if (droppable.length === 0) break;
       const worst = droppable.reduce((a, b) => (b.priority > a.priority ? b : a));
-      leftSegs = leftSegs.filter((s) => s !== worst);
-      rightSegs = rightSegs.filter((s) => s !== worst);
+      if (worst === branchSegment) branchSegment = null;
+      else statuses = statuses.filter((s) => s !== worst);
     }
 
-    let leftPlain = leftSegs.map((s) => s.plain).join(" ");
-    let leftColored = leftSegs.map((s) => s.colored).join(" ");
-    const rightPlain = rightSegs.map((s) => s.plain).join(sep.plain);
-    const rightColored = rightSegs.map((s) => s.colored).join(sep.colored);
+    const rightPlain = plainOf(statuses);
+    const rightColored = statuses.map((s) => s.colored).join(sep.colored);
+    const room = contentWidth - rightPlain.length - (rightPlain ? 2 : 0);
+    const pathText = truncatePlain(path, Math.max(room - prefix.length, 0));
 
-    let padding = contentWidth - leftPlain.length - rightPlain.length;
-    if (padding < 2) {
-      const keep = Math.max(contentWidth - rightPlain.length - 2 - 1, 0);
-      leftPlain = `${leftPlain.slice(0, keep)}…`;
-      leftColored = theme.fg("text", leftPlain);
-      padding = contentWidth - leftPlain.length - rightPlain.length;
-    }
-    const lines = [gutter + leftColored + " ".repeat(Math.max(padding, 2)) + rightColored + gutter];
-
-    // The session name sits under the path so a long name never pushes the
-    // stats off the line.
-    const sessionName = ctx.sessionManager.getSessionName();
-    if (sessionName) {
-      const prefix = "Session name: ";
-      const room = contentWidth - prefix.length;
-      const label =
-        sessionName.length > room ? `${sessionName.slice(0, Math.max(room - 1, 0))}…` : sessionName;
-      lines.push(gutter + theme.fg("dim", prefix) + theme.fg("accent", label));
+    let colored = theme.fg("dim", prefix) + theme.fg("text", pathText);
+    let leftPlainLength = prefix.length + pathText.length;
+    if (branchSegment) {
+      colored += sep.colored + theme.fg("accent", branchSegment.plain);
+      leftPlainLength += sep.plain.length + branchSegment.plain.length;
     }
 
-    return lines;
+    const padding = contentWidth - leftPlainLength - rightPlain.length;
+    const gap = rightPlain ? Math.max(padding, 2) : 0;
+    return gutter + colored + " ".repeat(gap) + rightColored + gutter;
+  }
+
+  // The session name gets its own row, so a long name competes with nothing.
+  function sessionNameRow(ctx, theme, contentWidth, gutter) {
+    const name = sessionNameSegment(ctx, theme);
+    const namePlain = truncatePlain(name.plain, contentWidth);
+    const nameColored = namePlain === name.plain ? name.colored : theme.fg("dim", namePlain);
+    return gutter + nameColored + gutter;
   }
 
   const track = (_event, ctx) => {

@@ -24,6 +24,7 @@
 !/tests/guard-git.test.mjs
 !/tests/setup-config.test.mjs
 !/tests/centered-input-block.test.mjs
+!/tests/fleet-footer.test.mjs
 
 !/evals/
 /evals/*

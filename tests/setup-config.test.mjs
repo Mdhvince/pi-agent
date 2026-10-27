@@ -21,6 +21,7 @@ test("keeps reviewed setup files visible to Git and private state ignored", () =
 		"tests/guard-git.test.mjs",
 		"tests/setup-config.test.mjs",
 		"tests/centered-input-block.test.mjs",
+		"tests/fleet-footer.test.mjs",
 		"evals/README.md",
 	];
 	// Files that must stay ignored. Existing files are listed as they are;
