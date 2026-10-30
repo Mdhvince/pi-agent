@@ -46,4 +46,6 @@ If there are issues, list them as follows:
 Then reply to this question: how would you translate this in a polite and actionable comment ? (but do not say the PR is good if there are blockers, do not put the impression that the comment is optional.)
 
 --
-If there are no issues, simply write: **"All good"**.
+If there are no issues, simply write: **"All good"**
++
+End your message with either ✅ or ❌ (meaning "approve" or "do not approve" respectively)

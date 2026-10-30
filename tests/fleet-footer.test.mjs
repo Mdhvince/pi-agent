@@ -60,14 +60,25 @@ function installFooter(session) {
 	};
 }
 
-test("renders the current path above the session name", () => {
+test("renders the path, the branch and the session name on separate rows", () => {
 	const footer = installFooter({ name: "Footer work", cwd: "/tmp/work", branch: "main" });
 	const rows = footer.render(100);
 
-	assert.equal(rows.length, 2);
-	assert.match(rows[0], /^\s+Pwd: \/tmp\/work · ⎇ main\s+/);
+	assert.equal(rows.length, 3);
+	assert.match(rows[0], /^\s+Pwd: \/tmp\/work\s+/);
 	assert.ok(rows[0].includes("gemma4:31b-cloud"), "the status segments share the path row");
-	assert.match(rows[1], /^\s+Session name: Footer work\s+$/);
+	assert.match(rows[1], /^\s+Branch name: main\s+$/);
+	assert.match(rows[2], /^\s+Session name: Footer work\s+$/);
+	footer.dispose();
+});
+
+test("skips the branch row outside a repository", () => {
+	const footer = installFooter({ name: "Footer work", cwd: "/tmp/work" });
+	const rows = footer.render(100);
+
+	assert.equal(rows.length, 2);
+	assert.match(rows[0], /Pwd: \/tmp\/work/);
+	assert.match(rows[1], /Session name: Footer work/);
 	footer.dispose();
 });
 
@@ -84,11 +95,11 @@ test("shows the placeholder for a blank name instead of an empty row", () => {
 });
 
 test("updates the name row when the session gets named", () => {
-	const footer = installFooter({ name: undefined, cwd: "/tmp/work" });
-	assert.match(footer.render(100)[1], /No name yet/);
+	const footer = installFooter({ name: undefined, cwd: "/tmp/work", branch: "main" });
+	assert.match(footer.render(100)[2], /No name yet/);
 
 	footer.rename("Renamed session");
-	assert.match(footer.render(100)[1], /Session name: Renamed session/);
+	assert.match(footer.render(100)[2], /Session name: Renamed session/);
 	footer.dispose();
 });
 
@@ -100,14 +111,14 @@ test("cuts a long session name without touching the status segments", () => {
 	});
 	const rows = footer.render(60);
 
-	assert.match(rows[1], /…/);
+	assert.match(rows[2], /…/);
 	assert.ok(rows[0].includes("12%"), "the context usage must survive a long name");
 	assert.ok(rows[0].includes("gemma4:31b-cloud"), "the model must survive a long name");
 	assert.ok(rows.every((row) => row.length <= 60));
 	footer.dispose();
 });
 
-test("drops the branch before cutting the path", () => {
+test("cuts the path before dropping the always-shown segments", () => {
 	const footer = installFooter({
 		name: undefined,
 		cwd: "/tmp/work/apps/dashboard/src/components/widgets",
@@ -116,7 +127,20 @@ test("drops the branch before cutting the path", () => {
 	const rows = footer.render(45);
 
 	assert.match(rows[0], /^ +Pwd: \/tmp\/work.*… +12% · gemma4:31b-cloud +$/);
-	assert.ok(!rows[0].includes("⎇"), "the branch must give up its room first");
+	assert.match(rows[1], /^ +Branch name: feature\/footer-layout +$/);
+	assert.ok(rows.every((row) => row.length <= 45));
+	footer.dispose();
+});
+
+test("cuts a branch name that is wider than the content band", () => {
+	const footer = installFooter({
+		name: undefined,
+		cwd: "/tmp/work",
+		branch: "feature/an-extremely-long-branch-name-for-a-narrow-terminal",
+	});
+	const rows = footer.render(45);
+
+	assert.match(rows[1], /^ +Branch name: feature.*… +$/);
 	assert.ok(rows.every((row) => row.length <= 45));
 	footer.dispose();
 });

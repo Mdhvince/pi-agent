@@ -164,32 +164,27 @@ export default function fleetFooter(pi) {
 
     const sep = { plain: " · ", colored: theme.fg("dim", " · ") };
 
-    return [
-      pathRow(ctx, theme, contentWidth, gutter, sep),
-      sessionNameRow(ctx, theme, contentWidth, gutter),
-    ];
+    const rows = [pathRow(ctx, theme, contentWidth, gutter, sep)];
+    const branch = branchRow(theme, contentWidth, gutter);
+    if (branch) rows.push(branch);
+    rows.push(sessionNameRow(ctx, theme, contentWidth, gutter));
+    return rows;
   }
 
   // The path leads the first row and the status segments share it on the right.
-  // The branch sits next to the path but gives up its room like a droppable
-  // status segment, and the path itself is cut only as a last resort.
+  // A long path is cut only after the droppable segments gave up their room.
   function pathRow(ctx, theme, contentWidth, gutter, sep) {
     const prefix = "Pwd: ";
     const path = shortenCwd(ctx.cwd);
-    const branch = footerDataRef?.getGitBranch();
     let statuses = statusSegments(ctx, theme);
-    let branchSegment = branch ? { priority: 2, plain: `⎇ ${branch}` } : null;
-
     const plainOf = (segments) => segments.map((s) => s.plain).join(sep.plain);
-    const leftPlain = () => prefix + path + (branchSegment ? sep.plain + branchSegment.plain : "");
 
     // Drop the cheapest segment (highest priority number) until the row fits.
-    while (leftPlain().length + 2 + plainOf(statuses).length > contentWidth) {
-      const droppable = [...statuses.filter((s) => s.priority > 0), ...(branchSegment ? [branchSegment] : [])];
+    while (statuses.length > 0 && prefix.length + path.length + 2 + plainOf(statuses).length > contentWidth) {
+      const droppable = statuses.filter((s) => s.priority > 0);
       if (droppable.length === 0) break;
       const worst = droppable.reduce((a, b) => (b.priority > a.priority ? b : a));
-      if (worst === branchSegment) branchSegment = null;
-      else statuses = statuses.filter((s) => s !== worst);
+      statuses = statuses.filter((s) => s !== worst);
     }
 
     const rightPlain = plainOf(statuses);
@@ -197,16 +192,19 @@ export default function fleetFooter(pi) {
     const room = contentWidth - rightPlain.length - (rightPlain ? 2 : 0);
     const pathText = truncatePlain(path, Math.max(room - prefix.length, 0));
 
-    let colored = theme.fg("dim", prefix) + theme.fg("text", pathText);
-    let leftPlainLength = prefix.length + pathText.length;
-    if (branchSegment) {
-      colored += sep.colored + theme.fg("accent", branchSegment.plain);
-      leftPlainLength += sep.plain.length + branchSegment.plain.length;
-    }
-
-    const padding = contentWidth - leftPlainLength - rightPlain.length;
+    const padding = contentWidth - prefix.length - pathText.length - rightPlain.length;
     const gap = rightPlain ? Math.max(padding, 2) : 0;
-    return gutter + colored + " ".repeat(gap) + rightColored + gutter;
+    return gutter + theme.fg("dim", prefix) + theme.fg("text", pathText) + " ".repeat(gap) + rightColored + gutter;
+  }
+
+  // The branch sits directly under the path and is absent outside a repository.
+  function branchRow(theme, contentWidth, gutter) {
+    const branch = footerDataRef?.getGitBranch();
+    if (!branch) return null;
+    const prefix = "Branch name: ";
+    const name = truncatePlain(branch, Math.max(contentWidth - prefix.length, 0));
+    const colored = theme.fg("dim", prefix) + theme.fg(name === branch ? "accent" : "dim", name);
+    return gutter + colored + gutter;
   }
 
   // The session name gets its own row, so a long name competes with nothing.
