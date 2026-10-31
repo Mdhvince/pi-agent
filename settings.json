@@ -17,7 +17,8 @@
   "outputPad": 0,
   "terminal": {
     "showTerminalProgress": false,
-    "clearOnShrink": false
+    "clearOnShrink": false,
+    "imageWidthCells": 120
   },
   "followUpMode": "one-at-a-time",
   "steeringMode": "one-at-a-time",
@@ -43,5 +44,6 @@
   ],
   "extensions": [
     "-builtin:mcp"
-  ]
+  ],
+  "showHardwareCursor": false
 }

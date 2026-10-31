@@ -7,6 +7,7 @@ description: Skills that define the user preferences to write python code
 Use this skill when writing python code
 
 # General practices
+- Avoid "bricolage" and custom implementations of functionality already present in the Python standard library (stdlib). Always check the stdlib before suggesting a third-party package or a custom helper.
 - Follow `writing-python-code/guidelines/guidelines.md`
 - Imports built-ins first, then external libraries, then project files (all separated by a new blank line)
 - Always use Type Hints

@@ -15,7 +15,7 @@
 - Understand the relevant code before modifying it. Treat code as the source of truth and documentation as a fallback. Check the current version when consulting local or external sources.
 - Make the smallest maintainable change that fully solves the task. Preserve existing architecture, conventions, and style; do not refactor unrelated code.
 - Complete affected callers, tests, fixtures, configuration, and exports when a change requires them.
-- Prefer existing utilities and dependencies, then platform features or the standard library. Add dependencies only when they provide clear value.
+- Prioritize the standard library and platform features over external dependencies. Add dependencies only when they provide significant, objective value.
 - Use meaningful, accurate names. Add comments only when intent is not clear from the code.
 - Do not put agent, skill, or tool markers in code or commits. Comments must make sense without knowledge of the tooling used.
 - Reassess surrounding code after a change. Keep complexity only when current requirements justify it.
