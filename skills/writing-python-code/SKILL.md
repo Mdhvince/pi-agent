@@ -18,6 +18,8 @@ Use this skill when writing python code
 - Prefer ONE LINE formatting for constructs where it cannot degrade readability (function signatures, variable assignments, calls, class definitions), unless the 121 chars limit is reached. Loops, conditionals, and multi-step bodies are out of scope: expand them whenever expansion aids reading
 - Prefer pathlib over os.path
 - Prefer absolute imports statement over relative ones
+- Do not store what can be derived from other fields: rebuild it in `__post_init__` or expose it as a property. Derived state cannot drift from its source; stored redundant state delegates consistency to human discipline and hides convention mismatches
+- Name the arguments at call sites so a call reads without opening the function definition. Single-argument calls stay positional
 - Use accurate and simplified english words for variables / functions / classes / comments / docstrings
 
 # Rest-ish docstrings

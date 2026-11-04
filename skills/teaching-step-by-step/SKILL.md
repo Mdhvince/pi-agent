@@ -1,6 +1,6 @@
 ---
 name: teaching-step-by-step
-description: Mentoring rules for step-by-step learning sessions. Use when the user is learning a new domain, technology, or codebase, works in a dedicated learning repository, asks questions one at a time, or says things like "pas à pas", "explique-moi", "je veux apprendre", "je ne comprends pas", "on va trop vite".
+description: Mentoring rules for step-by-step learning sessions. Use when the user is learning a new domain, technology, or codebase, works in a dedicated learning repository, asks questions one at a time, or says things like "pas à pas", "explique-moi", "je veux apprendre", "je ne comprends pas", "on va trop vite". Read this skill before writing or editing any code in such a session, and again before each new script file.
 ---
 
 # Teaching step by step
@@ -38,11 +38,25 @@ context, do not apply them.
 - No preventive infrastructure: no performance timing, no memory measures, no
   assertions on values the teacher already knows. Teach a constraint when the
   learner actually meets it, then explain the tool that solves it.
+- Every line in a learning script must either teach the concept or produce
+  the displayed result. Diagnostic prints, intermediate counters, and
+  development scaffolding are removed before presenting the file. When the
+  learner asks about such a line, the first sentence of the answer states its
+  importance level, not its mechanics.
+- A learning project contains only the code that serves the current step.
+  Infrastructure and validation scripts are written when the step that needs
+  them begins, not before.
 - Store identifiers in data structures; translate to readable names only at
   display time. Keep data and presentation separate.
 - Apply exactly the requested change, nothing more. In a learning session,
   the teacher's unrequested initiatives (extra refactors, renames, cleanup)
   break the learner's agenda and confidence in the code.
+- Declare each variable as close to its first use as possible. A definition
+  far from its use forces the learner to carry a "why does this exist?"
+  question across the code. If a definition lives in an earlier cell only
+  to serve a later one, move it next to its consumer.
+- When the cause of a problem lies outside the requested change, name the
+  cause to the learner and let them set the scope.
 
 ## Verification and demonstration
 
@@ -51,6 +65,11 @@ context, do not apply them.
   the data, or the documentation before stating a fact.
 - Demonstrate with the learner's actual data instead of abstract examples.
   Run the failing case, print the real edge, show the sort on four real rows.
+- When an explanation fails, move one level DOWN in abstraction, never up.
+  Analogies, categories, and theory come after the mechanism, not before.
+  The bottom level is always the same: show the exact operation, its input
+  and its output on real values, and point at the line where information is
+  lost.
 - Situate every block honestly: never present an independent computation as a
   conclusion of the previous steps.
 - After editing a file that the learner has open in an editor, verify on disk
