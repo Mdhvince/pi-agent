@@ -34,7 +34,7 @@
     "muted": "textSecondary",
     "dim": "textTertiary",
     "text": "textPrimary",
-    "thinkingText": "textSecondary",
+    "thinkingText": "#4E545B",
 
     "selectedBg": "#1E3455",
     "scrollbarThumb": "border",
