@@ -16,6 +16,6 @@ Check:
 
 **RULES:**
 1. Only report a violation if you can point to the EXACT line of code.
-2. If the fix is a matter of taste, ignore it. Report only CLEAR violations.
-3. If NO clear violations, reply EXACTLY: "all good" and STOP.
+2. If the fix is a matter of taste, ignore it. Report only CLEAR violations. Exception: borderline naming is never taste. When a name does not match what the function returns or does, list it separately, one line per name, after the clear violations.
+3. If NO clear violations and no borderline naming, reply EXACTLY: "all good" and STOP.
 4. If violations found, use the /how-to-reply-to-medhy skill.

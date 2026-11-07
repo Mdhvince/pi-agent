@@ -23,7 +23,7 @@
   "followUpMode": "one-at-a-time",
   "steeringMode": "one-at-a-time",
   "transport": "auto",
-  "hideThinkingBlock": false,
+  "hideThinkingBlock": true,
   "markdown": {
     "mermaid": "streaming"
   },
