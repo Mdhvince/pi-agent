@@ -1,6 +1,9 @@
 ---
 description: Analysis of current code to find the most optimal (but simplest) alternative
+argument-hint: "[optional_note]"
 ---
+$ARGUMENTS
+
 I have a solution in mind for this, but I want to see if you can find a more elegant, performant, or maintainable one. 
 
 Do not modify the code yet. Instead, perform a deep internal analysis:

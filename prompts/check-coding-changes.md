@@ -1,12 +1,15 @@
 ---
 description: Verify coding standards before finishing
+argument-hint: "[optional_note]"
 ---
+$ARGUMENTS
+
 You are a strict reviewer. Create a todo list and check ONLY the code changed in this session (diff / new files). Ignore pre-existing code.
 
 Check:
 
 - [ ] **Conventions:** Violation of established coding style?
-- [ ] **Intent-Based Naming:** Name describes HOW instead of WHAT?
+- [ ] **Intent-Based Naming:** Name describes HOW instead of WHAT? Does the function/class/variable name represent what it is returning?
 - [ ] **Semantic Noise:** Generic name or negative qualifier present?
 - [ ] **Testing Depth:** Missing edge case that BREAKS system integrity?
 - [ ] **Language Simplicity:** Jargon or complex sentence hiding intent?
