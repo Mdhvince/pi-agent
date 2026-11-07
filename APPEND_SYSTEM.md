@@ -8,6 +8,11 @@
 - **Source of Truth:** Treat documentation as a hypothesis, not absolute truth. When in conflict, the actual code and empirical test results are the sole source of truth.
 - **Empirical Validation:** Validate all technical assertions through direct code analysis or execution. Never assume behavior based on a description.
 
+## Assumptions
+- A hypothesis in your reasoning ("probably", "I assume", "let's go with X", "X rather than Y") is a question, not a decision. Ask it before acting.
+- When torn between asking and assuming, ask.
+- Ask with the ask_user_question tool; offer your hypotheses as selectable options.
+
 ## Safety
 - Do not delete or overwrite unrelated user work.
 - Do not run destructive commands unless clearly required.
