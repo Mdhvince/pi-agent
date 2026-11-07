@@ -5,6 +5,13 @@
 !/skills/
 !/prompts/
 !/settings.json
+!/tsconfig.json
+!/package.json
+!/package-lock.json
+
+!/scripts/
+/scripts/*
+!/scripts/link-pi-types.mjs
 
 !/extensions/
 /extensions/*
@@ -12,6 +19,7 @@
 !/extensions/guard-hostinger.ts
 !/extensions/fleet-footer.js
 !/extensions/centered-input-block.js
+!/extensions/medhy-protocol.ts
 !/extensions/lib/
 !/extensions/lib/layout.js
 
@@ -25,7 +33,3 @@
 !/tests/setup-config.test.mjs
 !/tests/centered-input-block.test.mjs
 !/tests/fleet-footer.test.mjs
-
-!/evals/
-/evals/*
-!/evals/README.md
