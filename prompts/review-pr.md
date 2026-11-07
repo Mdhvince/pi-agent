@@ -30,22 +30,5 @@ Evaluate the PR by answering these questions:
 - **Zero Direct Interaction:** DO NOT post any comments, labels, or reviews directly to the PR/GitHub. All feedback must be delivered here in the chat.
 
 ### 4. Response Format
-Your response must follow this exact structure:
-
-**Summary Table:**
-| PR ID | The Problem | Solution Provided by PR | Complexity (LOW/MEDIUM/HIGH) |
-| :--- | :--- | :--- | :--- |
-| $ARGUMENTS | [Describe the issue being solved] | [Describe the technical approach] | [Level] |
-
-_The complexity here refers to the complexity of the proposed solution of the PR's author_
-
-**Findings (Only the blockers):**
-If there are issues, list them as follows:
-- `[file_path:line_number]` - **Issue:** [Description] $\rightarrow$ **Proposed Change:** [Suggestion]
-
-Then reply to this question: how would you translate this in a polite and actionable comment ? (but do not say the PR is good if there are blockers, do not put the impression that the comment is optional.)
-
---
-If there are no issues, simply write: **"All good"**
-+
-End your message with either ✅ or ❌ (meaning "approve" or "do not approve" respectively)
+- Use the /how-to-reply-to-medhy skill.
+- **Final Step:** Suggest a polite/actionable comment for the author (only for blockers). End with ✅ (approve) or ❌ (do not approve).

@@ -18,11 +18,4 @@ You must avoid "Sycophancy". Do not agree with a comment just because it was wri
 - **Concise Synthesis:** Simplify the human language of the comments into technical facts.
 
 ### 4. Response Format
-Your response must follow this exact structure:
-
-**Comment Audit Table:**
-| Comment (Simplified) | Problem Raised | Status (Valid / Invalid / Out of Scope) | Proof/Reasoning | Suggestion |
-| :--- | :--- | :--- | :--- | :--- |
-| [Short summary of the feedback] | [The technical risk or issue] | [Status] | [Why? Result of test or logic] | [How to fix or why to ignore] |
-
-If no comments need action, simply reply: **"All comments are either noise or already addressed."**
+- Use the /how-to-reply-to-medhy skill.

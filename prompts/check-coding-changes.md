@@ -12,8 +12,7 @@ Check:
 - [ ] **Language Simplicity:** Jargon or complex sentence hiding intent?
 
 **RULES:**
-1. Only report a violation if you can point to the EXACT line of code that breaks the rule in the changed code.
-2. If the fix is a matter of taste ("could be better"), ignore it. Report only CLEAR violations.
-3. If NO clear violations, reply EXACTLY: "all good" and STOP. Do not suggest improvements.
-
-If violations found, output a table: | Rule Violated | Exact Location & Proposed Fix |
+1. Only report a violation if you can point to the EXACT line of code.
+2. If the fix is a matter of taste, ignore it. Report only CLEAR violations.
+3. If NO clear violations, reply EXACTLY: "all good" and STOP.
+4. If violations found, use the /how-to-reply-to-medhy skill.

@@ -11,10 +11,6 @@ Do not modify the code yet. Instead, perform a deep internal analysis:
 **CRITICAL CONSTRAINT: Simplicity is a feature.** 
 The Gold Standard is NOT the most complex or abstract solution, but the one with the highest impact for the lowest possible complexity. Avoid over-engineering, unnecessary abstractions, or premature optimizations. If the simplest solution is the best one, that is the Gold Standard.
 
-Present your findings in a concise table:
-| Current Path | Why it's not optimal | Proposed Gold Standard | Primary Benefit | Complexity Cost |
-| :--- | :--- | :--- | :--- | :--- |
-
-*Complexity Cost:* (e.g., "None", "Low", "Medium") - If this is "High", the solution is likely over-engineered.
+- Use the /how-to-reply-to-medhy skill.
 
 If the current solution is already the most optimal balance of simplicity and performance, simply reply "The current implementation is the Gold Standard."
