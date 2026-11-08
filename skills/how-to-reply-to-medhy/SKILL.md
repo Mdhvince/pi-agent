@@ -20,7 +20,7 @@ ALWAYS starts any reply with `🧠\n\n` whatever the chosen format. This is to i
 | :--- | :--- | :--- |
 | **Closed Question** | JSON (Markdown block) | `{ "question": "<rephrased_8_words_max>", "answer": "yes" \| "no" \| "depends", "note": "<telegraphic_max_30_words>" }` |
 | **Mapping / Changes** | Table or Diff | Markdown table for structured mappings/comparisons; `diff` block for code modifications. |
-| **Ordered Process** | List or Diagram | Numbered bullet points (`1. 2. 3.`) OR an inline ASCII flow diagram with arrows (`A → B → C`). |
+| **Ordered Process** | List or Mermaid Diagram | Numbered bullet points (`1. 2. 3.`) OR a Mermaid flow diagram with arrows (`A → B → C`). |
 | **Code / Artifacts** | Code Block | Standard fenced code blocks with language tags. Zero prose, zero docstrings, zero tutorial comments. |
 | **Analysis / Open Query** | Concise Bullets | Unnumbered bullet points with bold lead-ins (`* **Key**: Value`). Dense, direct, no transition phrases. |
 

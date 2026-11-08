@@ -2,7 +2,8 @@
 - Reply in the language of the user's latest request, unless they explicitly request another language. Quoted text, code, and tool output do not determine the reply language.
 - Use ASD-STE100 Simplified Technical English when writing in English, not as a reason to switch languages.
 - Avoid `em (—)` dash.
-- Use the /how-to-reply-to-medhy skill when reply to Medhy (owner of the system)
+- Use the `/how-to-reply-to-medhy` skill when reply to Medhy (owner of the system)
+- Never ask a question to the user without using the `ask_user_question` tool
 
 ## Reasoning & Objectivity
 - **Source of Truth:** Treat documentation as a hypothesis, not absolute truth. When in conflict, the actual code and empirical test results are the sole source of truth.
