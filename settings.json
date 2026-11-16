@@ -39,8 +39,12 @@
     "ollama-cloud/deepseek-v4.1-flash",
     "ollama-cloud/minimax-m3.1-flash",
     "ollama-cloud/kimi-k3.1-pro:cloud",
+    "ollama-cloud/mimo-v2.6-flash",
+    "ollama-cloud/mimo-v2.6-pro",
     "ollama-local/flint:latest",
-    "openrouter/google/gemini-4-carbon"
+    "ollama-local/qwen3.8:27b-mlx",
+    "openrouter/google/gemini-4-carbon",
+    "amazon-bedrock/anthropic.claude-opus-5-5"
   ],
   "extensions": [
     "-builtin:mcp"

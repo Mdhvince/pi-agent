@@ -12,3 +12,8 @@ description: Draft and post an actionable inline review comment
 4. Draft the comment in the chat, then use `ask_user_question` to ask whether it should be posted.
 5. If the user approves, use `ask_user_question` to ask whether to submit it as a comment only or as a change request.
 6. Post the comment as an inline comment on the correct file and line.
+
+Some additional rules:
+- Do not add work for me (i.e happy to discuss, pairing etc..)
+- Never state user's name
+- Do not take initiave, just focus on the comment
