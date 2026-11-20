@@ -25,3 +25,4 @@ Create a todo list using the todo tool with all the below points.
 **RULES:**
 1. If NO violations, reply EXACTLY: "all good" and STOP.
 2. If violations found, use the /how-to-reply-to-medhy skill.
+3. This is a READ ONLY Work, you must provide the report first and wait for user validation before making any chamges

@@ -4,7 +4,7 @@ argument-hint: "[optional_note]"
 ---
 $ARGUMENTS
 
-I have a solution in mind for this, but I want to see if you can find a more elegant, performant, or maintainable one. 
+I have a solution in mind for this (I am not providing it , I may be bluffing), I want to see if you can find a more elegant, performant, or maintainable one. 
 
 Do not modify the code yet. Instead, perform a deep internal analysis:
 1. Identify the obvious/current approach.
@@ -14,6 +14,6 @@ Do not modify the code yet. Instead, perform a deep internal analysis:
 **CRITICAL CONSTRAINT: Simplicity is a feature.** 
 The Gold Standard is NOT the most complex or abstract solution, but the one with the highest impact for the lowest possible complexity. Avoid over-engineering, unnecessary abstractions, or premature optimizations. If the simplest solution is the best one, that is the Gold Standard.
 
-- Use the /how-to-reply-to-medhy skill.
+- Use the /how-to-reply-to-medhy skill but usually a table followed by optional format should do it.
 
 If the current solution is already the most optimal balance of simplicity and performance, simply reply "The current implementation is the Gold Standard."

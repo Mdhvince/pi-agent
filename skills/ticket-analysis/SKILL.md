@@ -13,6 +13,7 @@ This skill transforms the initial ticket reception from a "task to execute" into
 - **Anti-Sycophancy:** Prioritize objective technical truth over agreement with the ticket's author. If a suggested implementation is suboptimal or incorrect, provide technical proof and propose a superior alternative.
 - **Context First:** Code is the only source of truth. Documentation and ticket descriptions are pointers; the current state of the repository is the reality.
 - **Non-Rigid Guidance:** These steps are a framework for quality, not a rigid checklist. Use professional judgment to adapt the depth of analysis to the complexity of the ticket.
+- **FOCUS:** Make sure to stay in the scope of the ticket
 
 ## Workflow
 
