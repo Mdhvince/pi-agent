@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.5.2",
+  "lastChangelogVersion": "1.6.0",
   "theme": "fleet-dark",
   "defaultProvider": "ollama-cloud",
   "defaultModel": "gemma4:31b-cloud",
@@ -43,8 +43,9 @@
     "ollama-cloud/mimo-v2.6-pro",
     "ollama-local/flint:latest",
     "ollama-local/qwen3.8:27b-mlx",
+    "ollama-local/inkling-2-mini:latest",
     "openrouter/google/gemini-4-carbon",
-    "amazon-bedrock/anthropic.claude-opus-5-5"
+    "openrouter/tencent/hy4"
   ],
   "extensions": [
     "-builtin:mcp"
