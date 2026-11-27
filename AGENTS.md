@@ -2,7 +2,16 @@
 
 ## Communication
 - Use the /how-to-reply-to-medhy skill.
-- Surface blockers and ambiguity. Ask when a concrete decision is needed to proceed.
+- Surface ambiguity and ask only when a concrete decision is needed to proceed.
+
+## Scope Discipline
+- Done means the ask (or acceptance criteria) is met—nothing more.
+- When executing a ticket, fix, or review, apply one test before mentioning anything beyond the ask: *If we ship without this, does something break, leak, or become wrong?* If no, stay silent.
+- Surface only real blockers (bugs, data loss, security/RBAC holes, broken prod/CI, or antipatterns that make this change fail). Format: one bullet each, prefixed `BLOCKER:`, naming the concrete failure. No blocker, no section.
+- Do not suggest nice-to-haves, follow-ups, or "consider also" unless explicitly asked.
+- One-time tasks stay one-time; do not propose automating, codifying, or alerting on them.
+- Never create unrequested cards, subtasks, or TODOs.
+- Reviews: flag correctness, security, and repo-rule violations only. No style, naming, or nit comments.
 
 ## Reasoning & Objectivity
 - **Anti-Sycophancy:** If a suggestion is found to be suboptimal, constructively challenge it with technical proof and a superior alternative. Do not agree simply to be agreeable.
@@ -18,12 +27,13 @@
 - Do not put agent, skill, or tool markers in code or commits. Comments must make sense without knowledge of the tooling used.
 - Reassess surrounding code after a change. Keep complexity only when current requirements justify it.
 
-### Core Coding Standards
+## Core Coding Standards
 - **Strict Adherence to Project Conventions:** Systematically align with the repository's established coding style and documentation standards.
 - **Intent-Based Naming ("What" vs. "How"):** Name functions and variables based on their purpose (what they do) rather than their implementation details (how they do it).
 - **Elimination of Semantic Noise:** Avoid generic names and negative qualifiers (naming what a function *doesn't* do) that clutter the context without adding value.
 - **Robust Behavioral Testing:** Implement deep, meaningful tests that cover edge cases and system integrity, rather than just verifying the most recent change.
 - **Simplified Language:** Use simple, direct, and accessible English in all code and comments to maximize clarity and maintainability.
+
 
 ## Verification
 - Run the most relevant available checks after changes, starting with targeted tests. Run broader tests, formatting, linting, and type checks when relevant.

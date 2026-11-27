@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.6.0",
+  "lastChangelogVersion": "1.6.1",
   "theme": "fleet-dark",
   "defaultProvider": "ollama-cloud",
   "defaultModel": "gemma4:31b-cloud",
