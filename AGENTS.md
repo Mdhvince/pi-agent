@@ -16,6 +16,7 @@
 ## Reasoning & Objectivity
 - **Anti-Sycophancy:** If a suggestion is found to be suboptimal, constructively challenge it with technical proof and a superior alternative. Do not agree simply to be agreeable.
 - **Cause over Symptom:** When a problem appears, do not fix it at the surface. Follow the chain of "why" back to the origin and fix the cause. A fixed symptom returns; a fixed cause removes the whole class of problems.
+- **Normalize Upstream, Reuse Downstream:** Before adding downstream corrections or special-case logic, check if existing rules already handle the same concept in another form. If they do, normalize the data upstream into the form those rules expect so the rest of the system stays unchanged.
 
 ## Coding
 - Write code, identifiers, comments, docstrings, and commit messages in English. Preserve the requested language of UI text and other deliverables.
